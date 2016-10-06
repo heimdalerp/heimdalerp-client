@@ -1,0 +1,287 @@
+<template>
+  <div>
+    <button-bar :crumbs="bb_crumbs" :buttons="bb_buttons"></button-bar>
+    <form novalidate>
+    <div class="jumbotron">
+      <div class="col-xs-12">
+        <div class="col-xs-10">
+          <h2 v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.name }}</h2>
+          <input
+            type="text"
+            v-if="editing"
+            class="form-control input-lg"
+            v-model="invoice_ar_contact.invoice_contact.contact_contact.name"
+            placeholder="Razón Social"
+            />
+        </div>
+      </div>
+      <div class="col-xs-12">
+        <div class="col-xs-10">
+          <h6 v-if="!editing && type">Es una persona jurídica</h6>
+          <h6 v-if="!editing && !type">Es una persona física</h6>
+          <input v-if="editing" type="checkbox" v-model="type" /><span v-if="editing">Es una persona jurídica</span>
+        </div>
+      </div>
+      <div class="row">
+
+        <!-- Left column -->
+        <div class="col-sm-6 col-xs-12">
+          <div class="col-xs-12">
+            <div class="form-group">
+              <one-to-one v-if="editing" :name="otofiscal.name" :options="otofiscal.options" :model.sync="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
+              <p v-if="!editing">{{ pf(invoice_ar_contact.invoice_contact.fiscal_position) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="col-sm-6 col-xs-12">
+          <div class="col-xs-5">
+            <div v-if="editing" class="form-group">
+              <one-to-one :name="otoidtype.name" :options="otoidtype.options" :model.sync="invoice_ar_contact.id_type"></one-to-one>
+            </div>
+            <p v-if="!editing">{{ df(invoice_ar_contact.id_type) }}</p>
+          </div>
+
+          <div class="col-xs-7">
+            <div v-if="editing" class="form-group">
+              <label>&nbsp;</label>
+              <input class="form-control" type="text" name="name" v-model="invoice_ar_contact.id_number"/>
+            </div>
+            <p v-if="!editing">{{ invoice_ar_contact.id_number }}</p>
+          </div>
+        </div>
+
+        <!-- Left column -->
+        <div class="col-sm-6 col-xs-12">
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="addr">Domicilio</label>
+              <input id="addr" placeholder="Ej. Av. de Mayo 1773" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.street_address"/>
+              <p v-if="!editing">{{invoice_ar_contact.invoice_contact.fiscal_address.street_address | default '-'}}</p>
+            </div>
+          </div>
+          <div class="col-xs-4">
+            <label for="floor">Piso</label>
+            <input id="addr" placeholder="Ej. 7" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.floor_number"/>
+            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_address.floor_number | default '-' }}</p>
+          </div>
+          <div class="col-xs-4">
+            <label for="apartment">Dpto</label>
+            <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.apartment_number"/>
+            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_address.apartment_number | default '-' }}</p>
+          </div>
+          <div class="col-xs-4">
+            <label for="postal">CP</label>
+            <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.postal_code"/>
+            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_address.postal_code }}</p>
+          </div>
+          <div class="col-xs-4" v-if="false">
+            <one-to-one v-if="editing" :name="otocountry.name" :options="otocountry.options" :model.sync="country"></one-to-one>
+          </div>
+          <div class="col-xs-4" v-if="false">
+            <one-to-one v-if="editing" :name="otoregion.name" :options="otoregion.options" :model.sync="region"></one-to-one>
+          </div>
+          <div class="col-xs-4" id="watup" v-if="false">
+            <one-to-one v-if="editing" :name="otolocality.name" :options="otolocality.options" :model.sync="invoice_ar_contact.invoice_contact.fiscal_address.locality"></one-to-one>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="col-sm-6 col-xs-12">
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="fiscal_phone">Teléfonos</label>
+              <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.phone_numbers | default '-'}}</p>
+              <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.contact_contact.phone_numbers"/>
+            </div>
+          </div>
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="fiscal_phone">Direcciones de correo</label>
+              <p v-if="!editing">{{invoice_ar_contact.invoice_contact.contact_contact.extra_emails | default '-'}}</p>
+              <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.contact_contact.extra_emails"/>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </form>
+  </div>
+</template>
+
+<script>
+import auth from '../../auth/index.js'
+import { addContact, editContact } from '../../vuex/actions'
+
+export default {
+  components: {
+    'ButtonBar': require('../../utils/components/ButtonBar.vue'),
+    'OneToOne': require('../../utils/components/OneToOne.vue')
+  },
+
+  data () {
+    return {
+      bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
+                   {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
+                   {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}],
+      bb_crumbs: ['Contactos'],
+      otofiscal: {name: 'Posición fiscal', options: []},
+      otoidtype: {name: 'Identificación', options: [{id: 'D', name: 'DNI'}, {id: 'T', name: 'CUIT'}, {id: 'L', name: 'CUIL'}]},
+      otolocality: {name: 'Ciudad', options: []},
+      otoregion: {name: 'Provincia', options: []},
+      otocountry: {name: 'País', options: []},
+      region: '',
+      country: '',
+      editing: false,
+      invoice_ar_contact: {}
+    }
+  },
+
+  computed: {
+    type () {
+      return this.invoice_ar_contact.invoice_contact.contact_contact.contact_type === 'C'
+    },
+    contact () {
+      for (let obj in this.contacts) {
+        if (this.contacts[obj].id === parseInt(this.$route.params.contactId)) {
+          return this.contacts[obj]
+        }
+      }
+    }
+  },
+
+  methods: {
+    pf (val) {
+      if (val === null) {
+        return 'ERR'
+      }
+
+      val = parseInt(val.substring(val.length - 2, val.length - 1))
+
+      if (val === 2) {
+        return 'IVA Responsable Inscripto'
+      } else if (val === 1) {
+        return 'IVA Exento'
+      } else if (val === 3) {
+        return 'Consumidor Final'
+      }
+
+      return 'ERR'
+    },
+    df (val) {
+      if (val === null) {
+        return '---'
+      }
+
+      if (val === 'D') {
+        return 'DNI'
+      } else if (val === 'T') {
+        return 'CUIT'
+      } else if (val === 'L') {
+        return 'CUIL'
+      }
+
+      return 'ERR'
+    },
+    edit () {
+      this.editing = true
+    },
+    discard () {
+      var r = window.confirm('Desea descartar los datos ingresados?')
+
+      if (r) {
+        if (this.$route.params.contactId !== 'new') {
+          this.editing = false
+          this.$router.go(this.$route.path)
+        } else {
+          this.$router.go('/contacts/')
+        }
+      }
+    },
+    save () {
+      var hasErrors = false
+      var msg = ''
+      if (this.invoice_ar_contact.invoice_contact.fiscal_position === undefined) {
+        msg += 'Debe rellenar la Posición Fiscal.\r\n'
+        hasErrors = true
+      }
+
+      if (this.invoice_ar_contact.invoice_contact.contact_contact.name === undefined) {
+        msg += 'Debe rellenar la Razón Social.\r\n'
+        hasErrors = true
+      }
+
+      if (hasErrors === true) {
+        this.$dispatch('showError', msg)
+        return false
+      }
+
+      this.invoice_ar_contact.invoice_contact.legal_name =
+        this.invoice_ar_contact.invoice_contact.contact_contact.name
+      this.invoice_ar_contact.invoice_contact.contact_contact.home_address =
+        this.invoice_ar_contact.invoice_contact.fiscal_address
+
+      if (this.$route.params.contactId === 'new') {
+        this.addContact(this.invoice_ar_contact).then(response => {
+          this.$router.go('/contacts/' + response.data.id + '/')
+        })
+      } else {
+        this.editContact(this.invoice_ar_contact).then(response => {
+          this.$router.go('/contacts')
+        })
+      }
+    }
+  },
+
+  created () {
+    // Get the selected contact or fill in a blank one
+    if (this.$route.params.contactId === 'new') {
+      this.invoice_ar_contact = Object.assign({}, this.invoice_ar_contact, {
+        invoice_contact: {
+          fiscal_address: {
+            floor_number: '',
+            apartment_number: '',
+            postal_code: ''
+          },
+          contact_contact: {
+            contact_type: 'C',
+            extra_emails: '',
+            phone_numbers: '',
+            home_address: '',
+            persons_company: auth.user.company
+          }
+        }
+      })
+      this.editing = true
+      this.bb_crumbs.push('Crear nuevo contacto')
+    } else {
+      this.invoice_ar_contact = this.contact
+      this.bb_crumbs.push(this.invoice_ar_contact.invoice_contact.contact_contact.name)
+    }
+
+    // Get available fiscal positions
+    this.$http.get('invoice/fiscalpositions/').then(
+      function (response) {
+        var fiscalpositions = response.json().results.map(function (c) { return { id: c.url, name: c.name } })
+        this.otofiscal.options.push(...fiscalpositions)
+      }
+    )
+  },
+
+  vuex: {
+    getters: {
+      contacts: state => state.contacts.all
+    },
+    actions: {
+      addContact,
+      editContact
+    }
+  },
+
+  route: {
+    canReuse: false
+  }
+}
+</script>
