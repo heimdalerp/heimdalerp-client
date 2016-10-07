@@ -3,8 +3,9 @@
     <ol class="breadcrumb">
       <li v-for="crumb in crumbs" v-bind:class="{'active': $index == crumbs.length-1}">{{crumb | capitalize}}</li>
     </ol>
+
     <button v-for="button in buttons" @click="clicked(button.method)"
-            v-if="condition(button.condition)" class="btn"
+            v-show="condition(button.condition)" class="btn"
             v-bind:class="[button.class? button.class : 'btn-primary']">
               {{button.text}}
     </button>
