@@ -119,18 +119,21 @@ export const getPOSs = function ({ dispatch }) {
   })
 
   // Populate their addresses
-  p.then(function (response) {
+  var anotherP = p.then(function (response) {
+    var p2
     for (let pos of response.data.results) {
-      var p2 = this.$http.get(pos.fiscal_address)
+      p2 = this.$http.get(pos.fiscal_address)
       p2.then(function (response) {
         pos.fiscal_address = response.data.street_address + ' P' +
         response.data.floor_number + ' D' + response.data.apartment_number
         dispatch('ACCOUNTING_POS_ADD', pos)
       })
     }
+    // Should store all the promises and return Promise.all()
+    return p2
   })
 
-  return p
+  return anotherP
 }
 
 export const getPOS = function ({ _vm, dispatch }, pointOfSale) {
