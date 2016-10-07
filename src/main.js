@@ -92,25 +92,6 @@ router.map({
         component: require('components/contacts/prefs')
       }
     }
-  },
-
-  '/carlitos/': {
-    component: require('components/Carlitos')
-  },
-  '/carlitos/consumos/asignar/': {
-    component: require('components/CarlitosConsumosAsignarList')
-  },
-  '/carlitos/consumos/asignar/:contactId/': {
-    component: require('components/CarlitosConsumosAsignarView')
-  },
-  '/carlitos/consumos/imputar/': {
-    component: require('components/CarlitosConsumosImputarList')
-  },
-  '/carlitos/consumos/imputar/:contactId/:year/:month/': {
-    component: require('components/CarlitosConsumosImputarView')
-  },
-  '/carlitos/parameters/': {
-    component: require('components/CarlitosParameters')
   }
 })
 

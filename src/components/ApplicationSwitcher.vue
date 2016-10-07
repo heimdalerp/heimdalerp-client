@@ -17,8 +17,7 @@ export default {
     return {
       modules: [
         {name: 'Contabilidad', link: 'accounting', icon: 'accounting'},
-        {name: 'Contactos', link: 'contacts', icon: 'contacts'},
-        {name: 'Carlitos', link: 'carlitos', icon: 'carlitos'}
+        {name: 'Contactos', link: 'contacts', icon: 'contacts'}
       ]
     }
   }
