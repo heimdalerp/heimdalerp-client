@@ -33,7 +33,7 @@ export default {
         buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
                   {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                   {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}],
-        crumbs: ['watup', 'negus']
+        crumbs: ['Contactos', 'Preferencias']
       },
       otoCountry: {
         name: 'País',
