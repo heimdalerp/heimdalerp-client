@@ -264,7 +264,7 @@ export default {
     // Get available fiscal positions
     this.$http.get('invoice/fiscalpositions/').then(
       function (response) {
-        var fiscalpositions = response.json().results.map(function (c) { return { id: c.url, name: c.name } })
+        var fiscalpositions = response.body.results.map(function (c) { return { id: c.url, name: c.name } })
         this.otofiscal.options.push(...fiscalpositions)
       }
     )
