@@ -1,4 +1,6 @@
 import {
+  ACCOUNTING_FISCALPOSITION_ADD,
+  ACCOUNTING_FISCALPOSITION_WIPE,
   ACCOUNTING_INVOICE_ADD,
   ACCOUNTING_INVOICE_EDIT,
   ACCOUNTING_INVOICE_WIPE,
@@ -13,6 +15,9 @@ import {
 
 // initial state
 const state = {
+  fiscalPositions: {
+    all: []
+  },
   invoices: {
     all: []
   },
@@ -28,6 +33,16 @@ const state = {
 }
 
 const mutations = {
+  [ACCOUNTING_FISCALPOSITION_ADD] (state, fiscalposition) {
+    const newFiscalPosition = fiscalposition
+
+    state.fiscalPositions.all.push(newFiscalPosition)
+  },
+  [ACCOUNTING_FISCALPOSITION_WIPE] (state, fiscalposition) {
+    const fiscalPositions = []
+
+    state.fiscalPositions.all = fiscalPositions
+  },
   [ACCOUNTING_INVOICE_ADD] (state, invoice) {
     const newInvoice = invoice
 

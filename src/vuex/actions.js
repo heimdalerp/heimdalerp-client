@@ -1,4 +1,16 @@
 // ACCOUNTING MODULE
+export const getFiscalPositions = function ({ _vm, dispatch }) {
+  var p = _vm.$http.get('invoice/fiscalpositions/')
+  p.then((response) => {
+    dispatch('ACCOUNTING_FISCALPOSITION_WIPE')
+    for (let fiscalposition of response.body.results) {
+      dispatch('ACCOUNTING_FISCALPOSITION_ADD', fiscalposition)
+    }
+  })
+
+  return p
+}
+
 export const getInvoices = function ({ _vm, dispatch, state }) {
   var p = this.$http.get('invoice_ar/invoices/')
   p.then(function (response) {
@@ -110,6 +122,16 @@ export const getPaymentsByContact = function ({ dispatch }, contact) {
   return p
 }
 
+export const addPOS = function ({ dispatch }, pos) {
+  var p = this.$http.post('invoice_ar/pointsofsale/', pos)
+
+  p.then(response => {
+    dispatch('ACCOUNTING_POS_ADD', pos)
+  })
+
+  return p
+}
+
 export const getPOSs = function ({ dispatch }) {
   var p = this.$http.get('invoice_ar/pointsofsale/')
 
@@ -119,21 +141,21 @@ export const getPOSs = function ({ dispatch }) {
   })
 
   // Populate their addresses
-  var anotherP = p.then(function (response) {
-    var p2
+  var p2 = p.then(function (response) {
+    var promises = []
     for (let pos of response.data.results) {
-      p2 = this.$http.get(pos.fiscal_address)
-      p2.then(function (response) {
+      let p3 = this.$http.get(pos.fiscal_address)
+      p3.then(function (response) {
         pos.fiscal_address = response.data.street_address + ' P' +
         response.data.floor_number + ' D' + response.data.apartment_number
         dispatch('ACCOUNTING_POS_ADD', pos)
       })
+      promises.push(p3)
     }
-    // Should store all the promises and return Promise.all()
-    return p2
+    return Promise.all(promises)
   })
 
-  return anotherP
+  return p2
 }
 
 export const getPOS = function ({ _vm, dispatch }, pointOfSale) {
