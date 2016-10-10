@@ -5,12 +5,12 @@
       <div class="col-sm-12 col-xs-12">
         <div class="form-group">
           <label>Nombre de fantasía</label>
-          <input v-if="editing" type='text' class='form-control' />
+          <input v-if="editing" type='text' class='form-control' v-model="pos.fantasy_name" />
           <p v-else>{{ pos.fantasy_name }}</p>
         </div>
         <div class="form-group">
           <label>Domicilio Fiscal</label>
-          <input v-if="editing" type='text' class='form-control' />
+          <input v-if="editing" type='text' class='form-control' v-model="pos.fiscal_address.street_address" />
           <p v-else>{{ pos.fiscal_address }}</p>
         </div>
       </div>
@@ -18,16 +18,15 @@
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
           <label>Código</label>
-          <input v-if="editing" type='text' class='form-control' />
+          <input v-if="editing" type='text' class='form-control' v-model="pos.afip_id" />
           <p v-else>{{ pos.afip_id }}</p>
         </div>
       </div>
 
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
-          <label>Tipo</label>
-          <input v-if="editing" type='text' class='form-control' />
-          <p v-else>{{ type_string }}</p>
+          <one-to-one v-if="editing" :name="ototype.name" :options="ototype.options" :model.sync="pos.point_of_sale_type"></one-to-one>
+          <div v-else><label>Tipo</label><p>{{ type_string }}</p></div>
         </div>
       </div>
 
@@ -35,12 +34,13 @@
   </div>
 </template>
 <script>
-import { getPOSs } from '../../vuex/actions'
-import Vue from 'vue'
+import { addPOS, getPOSs } from '../../vuex/actions'
+import auth from '../../auth/index'
 
 export default {
   components: {
-    'ButtonBar': require('../../utils/components/ButtonBar.vue')
+    'ButtonBar': require('../../utils/components/ButtonBar.vue'),
+    'OneToOne': require('../../utils/components/OneToOne.vue')
   },
   computed: {
     type_string () {
@@ -66,7 +66,11 @@ export default {
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', class: 'btn-link', condition: function () { return this.editing }.bind(this)}],
       editing: false,
-      pos: {}
+      pos: {},
+      ototype: {name: 'Tipo', options: [{id: 'C', name: 'Fiscal Controller'},
+                                        {id: 'F', name: 'Pre-printed'},
+                                        {id: 'W', name: 'Webservice'},
+                                        {id: 'L', name: 'Online'}]}
     }
   },
   methods: {
@@ -77,7 +81,7 @@ export default {
       var r = window.confirm('Desea descartar los datos ingresados?')
 
       if (r) {
-        if (this.$route.params.contactId !== 'new') {
+        if (this.$route.params.posId !== 'new') {
           this.editing = false
           this.$router.go(this.$route.path)
         } else {
@@ -86,34 +90,34 @@ export default {
       }
     },
     save () {
+      this.addPOS(this.pos).then(() => {
+        this.$router.go('/accounting/pointsofsale/')
+      })
     }
   },
 
-  //  this.pos = Object.assign({}, {
-  //  fantasy_name: null,
-  //  fiscal_address: null,
-  //  afip_id: null,
-  //  point_of_sale_type: null
-  // })
-
-  /* if (this.$route.params.posId === 'new') {
-    this.editing = true
-    this.bb_crumbs.push('Crear nuevo Punto de Venta')
-  } else {
-    // this.bb_crumbs.push(this.pos.afip_id)
-  } */
   created () {
     this.getPOSs().then(function (response) {
-      var vm = this
-      Vue.nextTick(function () {
-        console.log(vm.POSs.length)
-      })
+      if (this.$route.params.posId === 'new') {
+        this.editing = true
+        this.bb_crumbs.push('Crear nuevo Punto de Venta')
+        this.pos = Object.assign({}, {
+          invoicear_company: auth.user.company_ar,
+          fiscal_address: {
+            'street_address': '',
+            'floor_number': '',
+            'apartment_number': '',
+            'locality': null,
+            'postal_code': ''
+          }
+        })
+      } else {
+        this.pos = this.currentPos
+        this.bb_crumbs.push(this.pos.afip_id)
+      }
     })
 
-    var vm = this
-    setTimeout(function () {
-      console.log(vm.POSs.length)
-    }, 3000)
+    this.getFiscalPositions
   },
 
   vuex: {
@@ -121,6 +125,7 @@ export default {
       POSs: state => state.accounting.pos.all
     },
     actions: {
+      addPOS,
       getPOSs
     }
   }
