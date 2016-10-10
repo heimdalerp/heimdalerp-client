@@ -143,11 +143,12 @@ export const getPOSs = function ({ dispatch }) {
   // Populate their addresses
   var p2 = p.then(function (response) {
     var promises = []
-    for (let pos of response.data.results) {
+    for (let pos of response.body.results) {
       let p3 = this.$http.get(pos.fiscal_address)
       p3.then(function (response) {
-        pos.fiscal_address = response.data.street_address + ' P' +
-        response.data.floor_number + ' D' + response.data.apartment_number
+        pos.fiscal_address = response.body
+        // pos.fiscal_address = response.data.street_address + ' P' +
+        // response.data.floor_number + ' D' + response.data.apartment_number
         dispatch('ACCOUNTING_POS_ADD', pos)
       })
       promises.push(p3)

@@ -11,7 +11,7 @@
         <div class="form-group">
           <label>Domicilio Fiscal</label>
           <input v-if="editing" type='text' class='form-control' v-model="pos.fiscal_address.street_address" />
-          <p v-else>{{ pos.fiscal_address }}</p>
+          <p v-else>{{ pos.fiscal_address.street_address }}</p>
         </div>
       </div>
 
@@ -97,20 +97,21 @@ export default {
   },
 
   created () {
+    this.pos = Object.assign({}, {
+      invoicear_company: auth.user.company_ar,
+      fiscal_address: {
+        'street_address': '',
+        'floor_number': '',
+        'apartment_number': '',
+        'locality': null,
+        'postal_code': ''
+      }
+    })
+
     this.getPOSs().then(function (response) {
       if (this.$route.params.posId === 'new') {
         this.editing = true
         this.bb_crumbs.push('Crear nuevo Punto de Venta')
-        this.pos = Object.assign({}, {
-          invoicear_company: auth.user.company_ar,
-          fiscal_address: {
-            'street_address': '',
-            'floor_number': '',
-            'apartment_number': '',
-            'locality': null,
-            'postal_code': ''
-          }
-        })
       } else {
         this.pos = this.currentPos
         this.bb_crumbs.push(this.pos.afip_id)
