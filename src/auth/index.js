@@ -13,7 +13,6 @@ export default {
   login (vuecontext, creds, redirect) {
     vuecontext.$http.post('api-token-auth/', creds).bind(this).then(function (response) {
       localStorage.setItem('id_token', response.body.token)
-      console.log(response.json())
       localStorage.setItem('username', creds.username)
       this.user.authenticated = true
       this.user.username = creds.username
