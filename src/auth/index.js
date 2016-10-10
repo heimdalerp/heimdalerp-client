@@ -6,12 +6,14 @@ export default {
   user: {
     authenticated: false,
     username: '',
-    company: 'http://localhost:8000/api/persons/companies/1/'
+    company: 'http://localhost:8000/api/persons/companies/1/',
+    company_ar: 'http://localhost:8000/api/invoice_ar/companies/1/'
   },
 
   login (vuecontext, creds, redirect) {
     vuecontext.$http.post('api-token-auth/', creds).bind(this).then(function (response) {
-      localStorage.setItem('id_token', response.json().token)
+      localStorage.setItem('id_token', response.body.token)
+      console.log(response.json())
       localStorage.setItem('username', creds.username)
       this.user.authenticated = true
       this.user.username = creds.username
