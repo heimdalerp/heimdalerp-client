@@ -123,7 +123,7 @@ export const getPaymentsByContact = function ({ dispatch }, contact) {
 }
 
 export const addPOS = function ({ dispatch }, pos) {
-  var p = this.$http.post('invoice_ar/pointsofsale/', pos)
+  var p = this.$http.post('invoice_ar/pointsofsalear/', pos)
 
   p.then(response => {
     dispatch('ACCOUNTING_POS_ADD', pos)
@@ -133,27 +133,17 @@ export const addPOS = function ({ dispatch }, pos) {
 }
 
 export const getPOSs = function ({ dispatch }) {
-  var p = this.$http.get('invoice_ar/pointsofsale/')
+  var p = this.$http.get('invoice_ar/pointsofsalear/')
 
   // Fetch the points of sale
   p.then(response => {
     dispatch('ACCOUNTING_POS_WIPE')
   })
 
-  // Populate their addresses
   var p2 = p.then(function (response) {
-    var promises = []
     for (let pos of response.body.results) {
-      let p3 = this.$http.get(pos.fiscal_address)
-      p3.then(function (response) {
-        pos.fiscal_address = response.body
-        // pos.fiscal_address = response.data.street_address + ' P' +
-        // response.data.floor_number + ' D' + response.data.apartment_number
-        dispatch('ACCOUNTING_POS_ADD', pos)
-      })
-      promises.push(p3)
+      dispatch('ACCOUNTING_POS_ADD', pos)
     }
-    return Promise.all(promises)
   })
 
   return p2
