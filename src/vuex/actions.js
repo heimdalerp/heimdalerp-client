@@ -12,12 +12,13 @@ export const getFiscalPositions = function ({ _vm, dispatch }) {
 }
 
 export const getInvoices = function ({ _vm, dispatch, state }) {
-  var p = this.$http.get('invoice_ar/invoices/')
+  var p = _vm.$http.get('invoice_ar/invoices/')
   p.then(function (response) {
     dispatch('ACCOUNTING_INVOICE_WIPE')
   })
 
   p.then(function (response) {
+    var promises = []
     for (let invoice of response.data.results) {
       // Fetch the contact name
       var p2 = getContact({ _vm, dispatch }, invoice.invoicear_contact)
@@ -48,10 +49,59 @@ export const getInvoices = function ({ _vm, dispatch, state }) {
         invoice.point_of_sale = ('000' + response.data.afip_id).slice(-4)
       })
 
-      Promise.all([p2, p3, p4]).then(function (values) {
+      promises.push(Promise.all([p2, p3, p4]).then(function (values) {
         dispatch('ACCOUNTING_INVOICE_ADD', invoice)
-      })
+      }))
     }
+  })
+
+  return p
+}
+
+export const getInvoicesByContact = function ({ _vm, dispatch, state }, contact) {
+  var p = this.$http.get(`invoice_ar/contacts/${contact.id}/invoices/`)
+  p.then(function (response) {
+    dispatch('ACCOUNTING_INVOICE_WIPE')
+  })
+
+  p.then(function (response) {
+    var promises = []
+    for (let invoice of response.data.results) {
+      // Fetch the contact name
+      var p2 = getContact({ _vm, dispatch }, invoice.invoicear_contact)
+
+      p2.then(function (response) {
+        invoice.invoicear_contact = state.contacts.all
+          .find(c => c.url === invoice.invoicear_contact)
+          .invoice_contact.legal_name
+      })
+
+      // Fetch the invoice type
+      if (invoice.invoice_type !== null) {
+        // var p3 = this.$http.get(invoice.invoice_type)
+        var p3 = getInvoiceType({ _vm, dispatch }, invoice.invoice_type)
+
+        p3.then(function (response) {
+          invoice.invoice_type = state.accounting.invoice_types.all
+            .find(t => t.url === invoice.invoice_type)
+            .name.split(' ').reverse()[0]
+      //         invoice.invoice_type = response.data.name.split(' ').reverse()[0]
+        })
+      }
+
+      // Fetch the point of sale number
+      var p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale)
+
+      p4.then(function (response) {
+        invoice.point_of_sale = ('000' + response.data.afip_id).slice(-4)
+      })
+
+      promises.push(Promise.all([p2, p3, p4]).then(function (values) {
+        dispatch('ACCOUNTING_INVOICE_ADD', invoice)
+      }))
+    }
+
+    return promises
   })
 
   return p
@@ -106,8 +156,8 @@ export const getPayments = function ({ dispatch }) {
   })
 }
 
-export const getPaymentsByContact = function ({ dispatch }, contact) {
-  var p = this.$http.get(`accounting/contacts/${contact.id}/payments/`)
+export const getPaymentsByContact = function ({ _vm, dispatch }, contact) {
+  var p = _vm.$http.get(`accounting/contacts/${contact.id}/payments/`)
 
   p.then(function (response) {
     dispatch('ACCOUNTING_PAYMENT_WIPE')
@@ -192,16 +242,16 @@ export const getContact = function ({ _vm, dispatch }, url) {
   return p
 }
 
-export const addContact = function ({ dispatch }, contact) {
-  var p = this.$http.post('invoice_ar/contacts/', contact)
+export const addContact = function ({ _vm, dispatch }, contact) {
+  var p = _vm.$http.post('invoice_ar/contacts/', contact)
   p.then(response => {
     dispatch('ADD_CONTACT', contact)
   })
   return p
 }
 
-export const editContact = function ({ dispatch }, contact) {
-  var p = this.$http.put(`invoice_ar/contacts/${contact.id}/`, contact)
+export const editContact = function ({ _vm, dispatch }, contact) {
+  var p = _vm.$http.put(`invoice_ar/contacts/${contact.id}/`, contact)
   p.then(response => {
     dispatch('EDIT_CONTACT', contact)
   })
