@@ -37,7 +37,7 @@
   </div>
 </template>
 <script>
-import { getContacts, getPaymentsByContact } from '../../vuex/actions'
+import { getContacts, getInvoicesByContact, getPaymentsByContact } from '../../vuex/actions'
 
 export default {
   data () {
@@ -45,20 +45,17 @@ export default {
       contactName: null,
       contactURL: null,
       db: null,
-      lines: [{date: '', desc: '', type: 'D', amount: 0}]
+      lines: []
     }
   },
 
   computed: {
-    store_contact () {
+    contact () {
       for (let obj in this.contacts) {
         if (this.contacts[obj].id === parseInt(this.$route.params.contactId)) {
           return this.contacts[obj]
         }
       }
-    },
-    contact () {
-      return this.$route.params.contactId
     },
     debeSum () {
       var subtotalDebe = 0
@@ -84,47 +81,44 @@ export default {
   },
 
   created () {
-    var p = this.getContacts()
-    p.then(function (response) {
-      var p2 = this.getPaymentsByContact(this.store_contact)
-      p2.then(function (response) {
-        this.contactName = this.store_contact.invoice_contact.contact_contact.name
-      })
-    })
-  },
-
-  ready: function () {
     var TAFFY = require('taffydb').taffy
-
-    // Get the invoices for this contact
-    let _self = this
     this.db = TAFFY()
-    this.$http.get('invoice_ar/contacts/' + this.contact + '/invoices/').then(function (response) {
-      response.json().results.forEach(function (result) {
-        _self.db.insert(result)
+
+    var vm = this
+    this.getContacts().then(function (response) {
+      var p2 = vm.getPaymentsByContact(vm.contact)
+      p2.then(function (response) {
+        vm.contactName = vm.contact.invoice_contact.contact_contact.name
       })
 
-      _self.lines = []
-
-      // Add to lines grouped by month, only 2016 for now
-      for (let i = 1; i <= 12; i++) {
-        var subtotalMonth = 0
-        var iPad = ('00' + i).substring(i.toString().length)
-
-        this.db({invoice_date: {like: '2016-' + iPad}}).each(function (r) {
-          subtotalMonth += Math.round(r.total * 100) / 100
+      // Get the invoices for this contact
+      vm.getInvoicesByContact(vm.contact).then(function () {
+        vm.invoices.forEach(function (invoice) {
+          vm.db.insert(invoice)
         })
 
-        subtotalMonth = parseFloat(subtotalMonth).toFixed(2)
+        // Should check year of first invoice and year of last
+        // and iterate over that too. Now 2016 is hardcoded.
+        for (let i = 1; i <= 12; i++) {
+          var subtotalMonth = 0
+          var iPad = ('00' + i).substring(i.toString().length)
 
-        if (subtotalMonth !== '0.00') {
-          _self.lines.push({date: '2016-' + iPad + '-30', type: 'D', amount: subtotalMonth, description: 'Consumos de ' + i + ' 2016'})
+          vm.db({invoice_date: {like: '2016-' + iPad}}).each(function (r) {
+            subtotalMonth += Math.round(r.total * 100) / 100
+          })
+
+          subtotalMonth = parseFloat(subtotalMonth).toFixed(2)
+
+          if (subtotalMonth !== '0.00') {
+            vm.lines.push({date: '2016-' + iPad + '-30', type: 'D', amount: subtotalMonth, description: 'Consumos de ' + i + ' 2016'})
+          }
         }
-      }
+      })
 
-      this.$http.get('accounting/contacts/' + this.contact + '/payments/').then(function (response) {
-        response.json().results.forEach(function (result) {
-          _self.lines.push({date: result.payment_date, type: 'H', amount: result.amount.toFixed(2), description: 'Pago ' + result.description})
+      // Get the payments for this contact
+      vm.getPaymentsByContact(vm.contact).then(function () {
+        vm.payments.forEach(function (result) {
+          vm.lines.push({date: result.payment_date, type: 'H', amount: result.amount.toFixed(2), description: 'Pago ' + result.description})
         })
       })
     })
@@ -133,10 +127,12 @@ export default {
   vuex: {
     getters: {
       contacts: store => store.contacts.all,
+      invoices: store => store.accounting.invoices.all,
       payments: store => store.accounting.payments.all
     },
     actions: {
       getContacts,
+      getInvoicesByContact,
       getPaymentsByContact
     }
   }
