@@ -157,19 +157,23 @@ export const getPayments = function ({ dispatch }) {
 }
 
 export const getPaymentsByContact = function ({ _vm, dispatch }, contact) {
-  var p = _vm.$http.get(`accounting/contacts/${contact.id}/payments/`)
+  var p = _vm.$http.get(`accounting/contacts/${contact.invoice_contact.id}/payments/`)
 
-  p.then(function (response) {
+  var p2 = p.then(function (response) {
     dispatch('ACCOUNTING_PAYMENT_WIPE')
-
+    var promises = []
     for (let payment of response.data.results) {
-      p.then(function (response) {
+      var p2 = p.then(function (response) {
         payment.contact_contact = contact.invoice_contact.contact_contact.name
         dispatch('ACCOUNTING_PAYMENT_ADD', payment)
       })
+      promises.push(p2)
     }
+
+    return promises
   })
-  return p
+
+  return p2
 }
 
 export const addPOS = function ({ dispatch }, pos) {
