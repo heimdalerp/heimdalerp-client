@@ -86,10 +86,7 @@ export default {
 
     var vm = this
     this.getContacts().then(function (response) {
-      var p2 = vm.getPaymentsByContact(vm.contact)
-      p2.then(function (response) {
-        vm.contactName = vm.contact.invoice_contact.contact_contact.name
-      })
+      vm.contactName = vm.contact.invoice_contact.contact_contact.name
 
       // Get the invoices for this contact
       vm.getInvoicesByContact(vm.contact).then(function () {
@@ -117,8 +114,8 @@ export default {
 
       // Get the payments for this contact
       vm.getPaymentsByContact(vm.contact).then(function () {
-        vm.payments.forEach(function (result) {
-          vm.lines.push({date: result.payment_date, type: 'H', amount: result.amount.toFixed(2), description: 'Pago ' + result.description})
+        vm.payments.forEach(function (payment) {
+          vm.lines.push({date: payment.payment_date, type: 'H', amount: payment.amount.toFixed(2), description: 'Pago ' + payment.description})
         })
       })
     })
