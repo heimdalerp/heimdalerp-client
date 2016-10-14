@@ -144,11 +144,7 @@ export default {
       return this.invoice_ar_contact.invoice_contact.contact_contact.contact_type === 'C'
     },
     contact () {
-      for (let obj in this.contacts) {
-        if (this.contacts[obj].id === parseInt(this.$route.params.contactId)) {
-          return this.contacts[obj]
-        }
-      }
+      return this.contacts.find(contact => contact.id === parseInt(this.$route.params.contactId))
     }
   },
 
