@@ -113,7 +113,7 @@
 
 <script>
 import auth from '../../auth/index.js'
-import { addContact, editContact } from '../../vuex/actions'
+import { addContact, editContact, getContacts, getFiscalPositions } from '../../vuex/actions'
 
 export default {
   components: {
@@ -236,47 +236,53 @@ export default {
   },
 
   created () {
-    // Get the selected contact or fill in a blank one
-    if (this.$route.params.contactId === 'new') {
-      this.invoice_ar_contact = Object.assign({}, this.invoice_ar_contact, {
-        invoice_contact: {
-          fiscal_address: {
-            floor_number: '',
-            apartment_number: '',
-            postal_code: ''
-          },
-          contact_contact: {
-            contact_type: 'C',
-            extra_emails: '',
-            phone_numbers: '',
-            home_address: '',
-            persons_company: auth.user.company
-          }
-        }
-      })
-      this.editing = true
-      this.bb_crumbs.push('Crear nuevo contacto')
-    } else {
-      this.invoice_ar_contact = this.contact
-      this.bb_crumbs.push(this.invoice_ar_contact.invoice_contact.contact_contact.name)
-    }
+    var vm = this
 
-    // Get available fiscal positions
-    this.$http.get('invoice/fiscalpositions/').then(
-      function (response) {
-        var fiscalpositions = response.body.results.map(function (c) { return { id: c.url, name: c.name } })
-        this.otofiscal.options.push(...fiscalpositions)
+    this.invoice_ar_contact = Object.assign({}, this.invoice_ar_contact, {
+      invoice_contact: {
+        fiscal_position: null,
+        fiscal_address: {
+          floor_number: '',
+          apartment_number: '',
+          postal_code: ''
+        },
+        contact_contact: {
+          contact_type: 'C',
+          extra_emails: '',
+          phone_numbers: '',
+          home_address: '',
+          persons_company: auth.user.company
+        }
       }
-    )
+    })
+
+    this.getContacts().then(function (response) {
+      console.dir(this)
+      if (vm.$route.params.contactId === 'new') {
+        vm.editing = true
+        vm.bb_crumbs.push('Crear nuevo contacto')
+      } else {
+        vm.invoice_ar_contact = vm.contact
+        vm.bb_crumbs.push(vm.invoice_ar_contact.invoice_contact.contact_contact.name)
+      }
+    })
+
+    this.getFiscalPositions().then(function (response) {
+      vm.otofiscal.options.push(...vm.fiscalpositions)
+    })
   },
 
   vuex: {
     getters: {
-      contacts: state => state.contacts.all
+      contacts: state => state.contacts.all,
+      fiscalpositions: state => state.accounting.fiscalPositions.all
+        .map(function (c) { return { id: c.url, name: c.name } })
     },
     actions: {
       addContact,
-      editContact
+      editContact,
+      getContacts,
+      getFiscalPositions
     }
   },
 
