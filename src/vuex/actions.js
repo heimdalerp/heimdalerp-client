@@ -240,9 +240,18 @@ export const getProducts = function ({ _vm, dispatch }) {
   })
 
   var p2 = p.then(function (response) {
+    let promises = []
+    let p3
     for (let product of response.body.results) {
-      dispatch('ACCOUNTING_PRODUCTS_ADD', product)
+      p3 = _vm.$http.get(product.vat)
+      p3.then(function (response) {
+        product.vat = response.body
+        dispatch('ACCOUNTING_PRODUCTS_ADD', product)
+      })
+      promises.push(p3)
     }
+
+    return Promise.all(promises)
   })
 
   return p2
