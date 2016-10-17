@@ -221,6 +221,33 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSale) {
   return p
 }
 
+export const addProduct = function ({ _vm, dispatch }, product) {
+  var p = _vm.$http.post('invoice/products/', product)
+
+  var p2 = p.then(response => {
+    dispatch('ACCOUNTING_PRODUCTS_ADD', product)
+  })
+
+  return p2
+}
+
+export const getProducts = function ({ _vm, dispatch }) {
+  var p = _vm.$http.get('invoice/products/')
+
+  // Fetch the points of sale
+  p.then(response => {
+    dispatch('ACCOUNTING_PRODUCTS_WIPE')
+  })
+
+  var p2 = p.then(function (response) {
+    for (let product of response.body.results) {
+      dispatch('ACCOUNTING_PRODUCTS_ADD', product)
+    }
+  })
+
+  return p2
+}
+
 // CONTACTS MODULE
 
 export const getContacts = function ({ _vm, dispatch }) {
