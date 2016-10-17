@@ -129,7 +129,7 @@
 <script>
 import ButtonBar from '../../utils/components/ButtonBar.vue'
 import Vue from 'vue'
-import { getInvoiceTypes, getContacts } from '../../vuex/actions'
+import { getInvoiceTypes, getContacts, getProducts } from '../../vuex/actions'
 
 export default {
   components: {
@@ -165,12 +165,9 @@ export default {
       productPromise: null,
       productEngine: null,
       p1: null,
-      p2: null
+      p2: null,
+      p3: null
     }
-  },
-  created () {
-    this.p1 = this.getInvoiceTypes()
-    this.p2 = this.getContacts()
   },
   methods: {
     discard () {
@@ -197,14 +194,17 @@ export default {
         console.log(line)
       }
     },
+    getProduct (product) {
+      return this.products.find(p => p.url === product.url)
+    },
     addItem () {
       this.invoicelines.push({
         _new: true,
         product: null,
         description: '',
-        price_sold: 0,
-        discount: 0,
-        quantity: 0,
+        price_sold: '',
+        discount: '',
+        quantity: '',
         vat: 0
       })
       var vm = this
@@ -219,55 +219,57 @@ export default {
       Vue.set(item, '_deleted', false)
     },
     initProducts () {
-      if (this.productPromise === null) {
-        this.productPromise = this.$http.get('invoice/products/')
+      let vm = this
+      let elt
 
-        this.productPromise.then(function (response) {
-          var results = response.data.results.map(function (product) {
-            var map = {}
-            map['url'] = product.url
-            map['name'] = product.name
-            return map
-          })
-
-          this.productEngine = new window.Bloodhound({
-            datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
-            queryTokenizer: window.Bloodhound.tokenizers.whitespace,
-            local: results
-          })
-          this.productEngine.initialize()
-
-          var elt = window.jQuery('[id^=line]')
-          elt.tagsinput({
-            maxTags: 1,
-            itemValue: 'url',
-            itemText: 'name',
-            typeaheadjs: {
-              name: 'engine',
-              displayKey: 'name',
-              source: this.productEngine.ttAdapter()
-            }
-          })
+      if (this.productEngine === null) {
+        let products = vm.products.map(function (product) {
+          var map = {}
+          map['url'] = product.url
+          map['name'] = product.name
+          return map
         })
-      } else {
-        var elt = window.jQuery('[id^=line]')
-        elt.tagsinput({
-          maxTags: 1,
-          itemValue: 'url',
-          itemText: 'name',
-          typeaheadjs: {
-            name: 'engine',
-            displayKey: 'name',
-            source: this.productEngine.ttAdapter()
-          }
+
+        this.productEngine = new window.Bloodhound({
+          datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
+          queryTokenizer: window.Bloodhound.tokenizers.whitespace,
+          local: products
         })
+        this.productEngine.initialize()
       }
+
+      elt = window.jQuery('[id^=line]')
+      elt.tagsinput({
+        maxTags: 1,
+        itemValue: 'url',
+        itemText: 'name',
+        typeaheadjs: {
+          name: 'engine',
+          displayKey: 'name',
+          source: this.productEngine.ttAdapter()
+        }
+      })
+      elt.on('itemAdded', function (event) {
+        var line = event.currentTarget.id.split('-')[1]
+        let product = vm.getProduct(event.item)
+        console.log(vm.invoicelines[line])
+        console.log(product)
+        vm.invoicelines[line].price_sold = product.current_price
+        vm.invoicelines[line].vat = product.vat.tax * 100
+      })
     }
   },
+
+  created () {
+    this.p1 = this.getInvoiceTypes()
+    this.p2 = this.getContacts()
+    this.p3 = this.getProducts()
+  },
+
   ready () {
     var vm = this
 
-    Promise.all([this.p1, this.p2]).then(function () {
+    Promise.all([this.p1, this.p2, this.p3]).then(function () {
       // Init the contact input
       // Bloodhound takes an url and a name, so we have to convert
       var bhContacts = vm.contacts.map(function (contact) {
@@ -347,11 +349,13 @@ export default {
     getters: {
       invoiceTypes: state => state.accounting.invoiceTypes.all,
       // .filter(it => it.invoice_type_class === 'B')
-      contacts: state => state.contacts.all
+      contacts: state => state.contacts.all,
+      products: state => state.accounting.products.all
     },
     actions: {
       getContacts,
-      getInvoiceTypes
+      getInvoiceTypes,
+      getProducts
     }
   }
 }
