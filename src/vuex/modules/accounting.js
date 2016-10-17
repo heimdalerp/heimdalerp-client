@@ -10,7 +10,10 @@ import {
   ACCOUNTING_PAYMENT_WIPE,
   ACCOUNTING_POS_ADD,
   ACCOUNTING_POS_EDIT,
-  ACCOUNTING_POS_WIPE
+  ACCOUNTING_POS_WIPE,
+  ACCOUNTING_PRODUCTS_ADD,
+  ACCOUNTING_PRODUCTS_EDIT,
+  ACCOUNTING_PRODUCTS_WIPE
 } from '../mutation_types'
 
 // initial state
@@ -28,6 +31,9 @@ const state = {
     all: []
   },
   pos: {
+    all: []
+  },
+  products: {
     all: []
   }
 }
@@ -88,6 +94,23 @@ const mutations = {
   [ACCOUNTING_POS_WIPE] (state) {
     const pos = []
     state.pos.all = pos
+  },
+  [ACCOUNTING_PRODUCTS_ADD] (state, product) {
+    const newProduct = product
+
+    state.products.all.push(newProduct)
+  },
+  [ACCOUNTING_PRODUCTS_EDIT] (state, product) {
+    var found = state.products.all.find(p => p.id === product.id)
+    if (found === undefined) {
+      state.products.all.push(product)
+    } else {
+      Object.assign(found, product)
+    }
+  },
+  [ACCOUNTING_PRODUCTS_WIPE] (state) {
+    const products = []
+    state.products.all = products
   }
 }
 
