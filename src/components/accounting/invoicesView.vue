@@ -12,11 +12,11 @@
         </div>
         <div class="form-group">
           <label>Tipo</label>
-          <select class="form-control">
-            <option v-for="invoiceType in invoiceTypes">{{ invoiceType.name }}</option>
+          <select class="form-control" v-model="invoice.invoice_type">
+            <option v-for="InvoiceType in invoiceTypes" value="{{ InvoiceType.url }}">{{ InvoiceType.name }}</option>
           </select>
         </div>
-        <div v-show="invoice.invoice_type > 1" class="form-group">
+        <div v-show="invoice.concept_type > 1" class="form-group">
           <label>Desde</label>
           <div class="input-group">
             <input type="text" class="calendar form-control" v-model="invoice.service_start">
@@ -35,13 +35,13 @@
         </div>
         <div class="form-group">
           <label>Concepto</label>
-          <select class="form-control" v-model="invoice.invoice_type">
+          <select class="form-control" v-model="invoice.concept_type">
             <option v-bind:value="1">Productos</option>
             <option v-bind:value="2">Servicios</option>
             <option v-bind:value="3">Productos y servicios</option>
           </select>
         </div>
-        <div v-show="invoice.invoice_type > 1" class="form-group">
+        <div v-show="invoice.concept_type > 1" class="form-group">
           <label>Hasta</label>
           <div class="input-group">
             <input type="text" class="calendar form-control" v-model="invoice.service_end">
@@ -129,7 +129,7 @@
 <script>
 import ButtonBar from '../../utils/components/ButtonBar.vue'
 import Vue from 'vue'
-import { getInvoiceTypes, getContacts, getProducts } from '../../vuex/actions'
+import { addInvoice, getInvoiceTypes, getContacts, getProducts } from '../../vuex/actions'
 
 export default {
   components: {
@@ -174,25 +174,20 @@ export default {
       this.$router.go('/accounting/invoices/')
     },
     save () {
-      for (let line of this.invoicelines) {
-        if (line._new === true) {
-          if (!('_deleted' in line) || (line._deleted === false)) {
-            console.log('es nuevo y debe ser enviado')
-          } else {
-            console.log('es nuevo pero fue borrado')
-          }
-          continue
-        }
-
-        if (line._deleted === true) {
-          console.log('es viejo y hay que borrarlo')
-          continue
-        }
-
-        console.log('es viejo y hay que actualizarlo')
-
-        console.log(line)
+      let invoice = {
+        invoicear_company: 'http://localhost:8000/api/invoice_ar/companies/1/',
+        invoicear_contact: window.jQuery('#contactInput').val(),
+        number: 0,
+        invoice_type: this.invoice.invoice_type,
+        invoice_date: this.invoice.invoice_date,
+        notes: '',
+        point_of_sale_ar: 'http://localhost:8000/api/invoice_ar/pointsofsalear/1/',
+        due_date: this.invoice.invoice_date,
+        concept_type: `http://localhost:8000/api/invoice_ar/concepttypes/${this.invoice.concept_type}/`
       }
+      invoice.invoice_lines = []
+
+      this.addInvoice(invoice)
     },
     getProduct (product) {
       return this.products.find(p => p.url === product.url)
@@ -271,7 +266,6 @@ export default {
 
     Promise.all([this.p1, this.p2, this.p3]).then(function () {
       // Init the contact input
-      // Bloodhound takes an url and a name, so we have to convert
       var bhContacts = vm.contacts.map(function (contact) {
         var map = {}
         map['url'] = contact.url
@@ -347,12 +341,12 @@ export default {
 
   vuex: {
     getters: {
-      invoiceTypes: state => state.accounting.invoiceTypes.all,
-      // .filter(it => it.invoice_type_class === 'B')
+      invoiceTypes: state => state.accounting.invoiceTypes.all.filter(it => it.invoice_type_class === 'B'),
       contacts: state => state.contacts.all,
       products: state => state.accounting.products.all
     },
     actions: {
+      addInvoice,
       getContacts,
       getInvoiceTypes,
       getProducts
