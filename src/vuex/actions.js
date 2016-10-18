@@ -1,14 +1,25 @@
 // ACCOUNTING MODULE
 export const getFiscalPositions = function ({ _vm, dispatch }) {
   var p = _vm.$http.get('invoice/fiscalpositions/')
-  p.then((response) => {
+
+  var p3 = p.then((promises) => {
     dispatch('ACCOUNTING_FISCALPOSITION_WIPE')
-    for (let fiscalposition of response.body.results) {
+    for (let fiscalposition of promises[0].body.results) {
       dispatch('ACCOUNTING_FISCALPOSITION_ADD', fiscalposition)
     }
   })
 
-  return p
+  return p3
+}
+
+export const addInvoice = function ({ _vm, dispatch }, invoice) {
+  var p = this.$http.post('invoice_ar/invoices/', invoice)
+
+  var p2 = p.then(function (response) {
+    dispatch('ACCOUNTING_INVOICE_ADD', invoice)
+  })
+
+  return p2
 }
 
 export const getInvoices = function ({ _vm, dispatch, state }) {
@@ -119,15 +130,19 @@ export const getInvoiceType = function ({ _vm, dispatch }, invoiceType) {
 
 export const getInvoiceTypes = function ({ _vm, dispatch }) {
   var p = _vm.$http.get('invoice/invoicetypes/')
+  var p2 = _vm.$http.get('invoice/fiscalpositionshaveinvoicetypesallowed/')
 
-  var p2 = p.then(function (response) {
+  var p3 = Promise.all([p, p2]).then(function (promises) {
     dispatch('ACCOUNTING_INVOICETYPE_WIPE')
-    for (let invoiceType of response.data.results) {
+    for (let invoiceType of promises[0].data.results) {
+      invoiceType.restrictions = promises[1].body.results.filter(restriction => {
+        return restriction.invoice_type === invoiceType.url
+      })
       dispatch('ACCOUNTING_INVOICETYPE_ADD', invoiceType)
     }
   })
 
-  return p2
+  return p3
 }
 
 export const addPayment = function ({ dispatch }, payment) {
