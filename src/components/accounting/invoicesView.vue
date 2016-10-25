@@ -7,12 +7,12 @@
       </div>
       <div class="col-sm-6 col-xs-12">
         <div class="form-group" style="max-height: 59px">
-          <label>Cliente</label>
-          <input id="contactInput" type="text" class="form-control">
+          <label>Contacto</label>
+          <input id="contactInput" type="text" class="form-control" :disabled="!editing">
         </div>
         <div class="form-group">
           <label>Tipo</label>
-          <select class="form-control" v-model="invoice.invoice_type">
+          <select class="form-control" v-model="invoice.invoice_type" :disabled="!editing">
             <option v-for="InvoiceType in invoiceTypes" value="{{ InvoiceType.url }}">{{ InvoiceType.name }}</option>
           </select>
         </div>
@@ -29,13 +29,13 @@
         <div class="form-group">
           <label>Fecha</label>
           <div class="input-group">
-            <input type="text" class="calendar form-control" v-model="invoice.invoice_date">
+            <input type="text" class="calendar form-control" v-model="invoice.invoice_date" :disabled="!editing">
             <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
           </div>
         </div>
         <div class="form-group">
           <label>Concepto</label>
-          <select class="form-control" v-model="invoice.concept_type">
+          <select class="form-control" v-model="invoice.concept_type" :disabled="!editing">
             <option v-bind:value="1">Productos</option>
             <option v-bind:value="2">Servicios</option>
             <option v-bind:value="3">Productos y servicios</option>
@@ -70,18 +70,20 @@
           </tfoot>
           <tbody>
             <tr v-for="line in invoicelines">
-              <td><input id="line-{{$index}}" type="text" class="form-control" :disabled="line._deleted" /></td>
-              <td><textarea rows="1" v-model="line.description" class="form-control" :disabled="line._deleted"></textarea></td>
-              <td><input size="3"  type="text" v-model="line.quantity" class="form-control" :disabled="line._deleted"></td>
+              <td>
+                <input id="line-{{$index}}" type="text" class="form-control" :disabled="line._deleted || !editing" />
+              </td>
+              <td><textarea rows="1" v-model="line.description" class="form-control" :disabled="line._deleted || !editing"></textarea></td>
+              <td><input size="3"  type="text" v-model="line.quantity" class="form-control" :disabled="line._deleted || !editing"></td>
               <td>
                 <div class="input-group">
                   <div class="input-group-addon">$</div>
-                  <input size="3" type="text" v-model="line.price_sold" class="form-control" :disabled="line._deleted">
+                  <input size="3" type="text" v-model="line.price_sold" class="form-control" :disabled="line._deleted || !editing">
                 </div>
               </td>
               <td>
                 <div class="input-group">
-                  <input size="3" type="text" v-model="line.discount" class="form-control" :disabled="line._deleted">
+                  <input size="3" type="text" v-model="line.discount" class="form-control" :disabled="line._deleted || !editing">
                   <div class="input-group-addon">%</div>
                 </div>
               </td>
@@ -129,7 +131,7 @@
 <script>
 import ButtonBar from '../../utils/components/ButtonBar.vue'
 import Vue from 'vue'
-import { addInvoice, getInvoiceTypes, getContacts, getProducts } from '../../vuex/actions'
+import { addInvoice, getInvoices, getInvoiceTypes, getContacts, getProducts } from '../../vuex/actions'
 
 export default {
   components: {
@@ -157,7 +159,11 @@ export default {
   data () {
     return {
       bb_crumbs: ['Contabilidad', 'Facturas', 'Ingresar'],
-      bb_buttons: [{text: 'Guardar', method: 'save'}, {text: 'Descartar', method: 'discard', class: 'btn-link'}],
+      bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
+                   {text: 'Autorizar', method: 'authorize', condition: function () { return this.can_authorize }.bind(this)},
+                   {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
+                   {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}
+                    ],
       invoice: {},
       // invoicelines: [{product: '', description: '', price_sold: 3.50, discount: 0, quantity: 3, vat: 21},
       //                {product: '', description: 'Gluten free', price_sold: 7, discount: 0, quantity: 1, vat: 10.5, _deleted: true}],
@@ -166,10 +172,21 @@ export default {
       productEngine: null,
       p1: null,
       p2: null,
-      p3: null
+      p3: null,
+      p4: null,
+      editing: true
     }
   },
   methods: {
+    can_authorize () {
+      return true
+    },
+    authorize () {
+      console.log('wat do')
+    },
+    edit () {
+      this.editing = false
+    },
     discard () {
       this.$router.go('/accounting/invoices/')
     },
@@ -188,6 +205,8 @@ export default {
       invoice.invoice_lines = []
 
       this.addInvoice(invoice)
+
+      this.editing = false
     },
     getProduct (product) {
       return this.products.find(p => p.url === product.url)
@@ -247,8 +266,6 @@ export default {
       elt.on('itemAdded', function (event) {
         var line = event.currentTarget.id.split('-')[1]
         let product = vm.getProduct(event.item)
-        console.log(vm.invoicelines[line])
-        console.log(product)
         vm.invoicelines[line].price_sold = product.current_price
         vm.invoicelines[line].vat = product.vat.tax * 100
       })
@@ -256,6 +273,14 @@ export default {
   },
 
   created () {
+    var vm = this
+    this.p4 = this.getInvoices()
+    if (this.$route.params.invoiceId !== 'new') {
+      this.editing = false
+      this.invoice = Object.assign({}, this.invoices.all.find(function (i) {
+        return i.id === parseInt(vm.$route.params.invoiceId)
+      }))
+    }
     this.p1 = this.getInvoiceTypes()
     this.p2 = this.getContacts()
     this.p3 = this.getProducts()
@@ -264,7 +289,7 @@ export default {
   ready () {
     var vm = this
 
-    Promise.all([this.p1, this.p2, this.p3]).then(function () {
+    Promise.all([this.p1, this.p2, this.p3, this.p4]).then(function () {
       // Init the contact input
       var bhContacts = vm.contacts.map(function (contact) {
         var map = {}
@@ -343,9 +368,11 @@ export default {
     getters: {
       invoiceTypes: state => state.accounting.invoiceTypes.all.filter(it => it.invoice_type_class === 'B'),
       contacts: state => state.contacts.all,
-      products: state => state.accounting.products.all
+      products: state => state.accounting.products.all,
+      invoices: state => state.accounting.invoices
     },
     actions: {
+      getInvoices,
       addInvoice,
       getContacts,
       getInvoiceTypes,
