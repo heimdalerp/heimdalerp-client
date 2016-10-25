@@ -46,7 +46,7 @@ export const getInvoices = function ({ _vm, dispatch, state }) {
         var p3 = getInvoiceType({ _vm, dispatch }, invoice.invoice_type)
 
         p3.then(function (response) {
-          invoice.invoice_type = state.accounting.invoice_types.all
+          invoice.invoice_type = state.accounting.invoiceTypes.all
             .find(t => t.url === invoice.invoice_type)
             .name.split(' ').reverse()[0]
       //         invoice.invoice_type = response.data.name.split(' ').reverse()[0]
@@ -54,10 +54,10 @@ export const getInvoices = function ({ _vm, dispatch, state }) {
       }
 
       // Fetch the point of sale number
-      var p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale)
+      var p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale_ar)
 
       p4.then(function (response) {
-        invoice.point_of_sale = ('000' + response.data.afip_id).slice(-4)
+        invoice.point_of_sale_ar = ('000' + response.data.afip_id).slice(-4)
       })
 
       promises.push(Promise.all([p2, p3, p4]).then(function (values) {
@@ -101,10 +101,10 @@ export const getInvoicesByContact = function ({ _vm, dispatch, state }, contact)
       }
 
       // Fetch the point of sale number
-      var p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale)
+      var p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale_ar)
 
       p4.then(function (response) {
-        invoice.point_of_sale = ('000' + response.data.afip_id).slice(-4)
+        invoice.point_of_sale_ar = ('000' + response.data.afip_id).slice(-4)
       })
 
       promises.push(Promise.all([p2, p3, p4]).then(function (values) {
@@ -224,7 +224,7 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSale) {
   // Populate its addresses
   p.then(function (response) {
     pointOfSale = response.data
-    var p2 = _vm.$http.get(pointOfSale.fiscal_address)
+    var p2 = _vm.$http.get(pointOfSale.fiscal_address.url)
 
     p2.then(function (response) {
       pointOfSale.fiscal_address = response.data.street_address + ' P' +
