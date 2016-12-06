@@ -257,7 +257,7 @@ export default {
         vm.editing = true
         vm.bb_crumbs.push('Crear nuevo contacto')
       } else {
-        vm.invoice_ar_contact = vm.contact
+        vm.invoice_ar_contact = Object.assign({}, vm.contact)
         vm.bb_crumbs.push(vm.invoice_ar_contact.invoice_contact.contact_contact.name)
       }
     })
