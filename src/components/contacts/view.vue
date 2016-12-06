@@ -220,7 +220,7 @@ export default {
         this.invoice_ar_contact.invoice_contact.fiscal_address
 
       if (this.$route.params.contactId === 'new') {
-        this.addContact(this.invoice_ar_contact).then(response => {
+        this.addContact(this, this.invoice_ar_contact).then(response => {
           this.$router.go('/contacts/' + response.data.id + '/')
         })
       } else {
@@ -234,7 +234,7 @@ export default {
   created () {
     var vm = this
 
-    this.invoice_ar_contact = Object.assign({}, this.invoice_ar_contact, {
+    this.invoice_ar_contact = {
       invoice_contact: {
         fiscal_position: null,
         fiscal_address: {
@@ -250,10 +250,9 @@ export default {
           persons_company: auth.user.company
         }
       }
-    })
+    }
 
     this.getContacts().then(function (response) {
-      console.dir(this)
       if (vm.$route.params.contactId === 'new') {
         vm.editing = true
         vm.bb_crumbs.push('Crear nuevo contacto')
