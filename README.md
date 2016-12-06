@@ -14,15 +14,22 @@ npm run dev
 # build for production with minification
 npm run build
 
-# run unit tests
+# run unit tests (not implemented)
 npm run unit
 
-# run e2e tests
+# run e2e tests (not implemented)
 npm run e2e
 
 # run all tests
 npm test
 ```
 
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
-# heimdalerp-client
+## Configure the environment
+This guide assumes you have loaded the corresponding accounting and invoice fixtures.
+
+Log into the REST API with your superuser account.
+Head to `/api/geo/localities/` and create the locality of your company.
+Head to `/api/invoice_ar/companies/1/` and fill in your company data.
+
+Log into the client.
+Head to `/accounting/pointsofsale` and set up your points of sale.
