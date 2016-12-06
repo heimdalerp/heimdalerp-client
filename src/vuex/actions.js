@@ -246,6 +246,16 @@ export const addProduct = function ({ _vm, dispatch }, product) {
   return p2
 }
 
+export const editProduct = function ({ dispatch }, context, product) {
+  var p = context.$http.put(`invoice/products/${product.id}/`, product)
+
+  p.then(function (result) {
+    dispatch('ACCOUNTING_PRODUCTS_EDIT', product)
+  })
+
+  return p
+}
+
 export const getProducts = function ({ _vm, dispatch }) {
   var p = _vm.$http.get('invoice/products/')
 
@@ -270,6 +280,22 @@ export const getProducts = function ({ _vm, dispatch }) {
   })
 
   return p2
+}
+
+export const getVATs = function ({ dispatch }, context) {
+  var v = context.$http.get('invoice/vats/')
+
+  v.then(response => {
+    dispatch('ACCOUNTING_VATS_WIPE')
+  })
+
+  var v2 = v.then(function (response) {
+    response.data.results.forEach(function (vat) {
+      dispatch('ACCOUNTING_VATS_ADD', vat)
+    })
+  })
+
+  return v2
 }
 
 // CONTACTS MODULE

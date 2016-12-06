@@ -13,7 +13,10 @@ import {
   ACCOUNTING_POS_WIPE,
   ACCOUNTING_PRODUCTS_ADD,
   ACCOUNTING_PRODUCTS_EDIT,
-  ACCOUNTING_PRODUCTS_WIPE
+  ACCOUNTING_PRODUCTS_WIPE,
+  ACCOUNTING_VATS_ADD,
+  ACCOUNTING_VATS_EDIT,
+  ACCOUNTING_VATS_WIPE
 } from '../mutation_types'
 
 // initial state
@@ -34,6 +37,9 @@ const state = {
     all: []
   },
   products: {
+    all: []
+  },
+  vats: {
     all: []
   }
 }
@@ -111,6 +117,23 @@ const mutations = {
   [ACCOUNTING_PRODUCTS_WIPE] (state) {
     const products = []
     state.products.all = products
+  },
+  [ACCOUNTING_VATS_ADD] (state, vat) {
+    const newVat = vat
+
+    state.vats.all.push(newVat)
+  },
+  [ACCOUNTING_VATS_EDIT] (state, vat) {
+    var found = state.vats.all.find(v => v.id === vat.id)
+    if (found === undefined) {
+      state.vats.all.push(vat)
+    } else {
+      Object.assign(found, vat)
+    }
+  },
+  [ACCOUNTING_VATS_WIPE] (state) {
+    const vats = []
+    state.vats.all = vats
   }
 }
 

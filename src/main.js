@@ -92,6 +92,18 @@ router.map({
         component: require('components/contacts/prefs')
       }
     }
+  },
+
+  'inventory': {
+    component: require('components/inventory/main'),
+    subRoutes: {
+      '/': {
+        component: require('components/inventory/productList')
+      },
+      '/products/:productId': {
+        component: require('components/inventory/productView')
+      }
+    }
   }
 })
 
