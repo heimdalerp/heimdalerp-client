@@ -5,20 +5,31 @@
       <div id="workflow" style="text-align: right; margin: -20px -60px 20px -60px; padding-right: 20px; min-height: 50px; background-color: lightgray; font-size: 1.5em">
         <span ><span class="workflow_current" style="font-weight: bold">Draft</span> > Authorized</span>
       </div>
+
       <div class="col-sm-6 col-xs-12">
+        <div class="form-group">
+          <label>Punto de venta</label>
+          <p v-show="!editing">0001</p>
+          <select v-else class="form-control">
+            <option>1</option>
+          </select>
+        </div>
         <div class="form-group" style="max-height: 59px">
           <label>Contacto</label>
-          <input id="contactInput" type="text" class="form-control" :disabled="!editing">
+          <p v-show="!editing">{{ invoice.invoicear_contact }}</p>
+          <span v-else><input id="contactInput" type="text" class="form-control"></span>
         </div>
         <div class="form-group">
           <label>Tipo</label>
-          <select class="form-control" v-model="invoice.invoice_type" :disabled="!editing">
+          <p v-show="!editing">{{ invoice.invoice_type }}</p>
+          <select v-else class="form-control" v-model="invoice.invoice_type">
             <option v-for="InvoiceType in invoiceTypes" value="{{ InvoiceType.url }}">{{ InvoiceType.name }}</option>
           </select>
         </div>
         <div v-show="invoice.concept_type > 1" class="form-group">
           <label>Desde</label>
-          <div class="input-group">
+          <p v-show="!editing">{{ invoice.service_start }}</p>
+          <div class="input-group" v-else>
             <input type="text" class="calendar form-control" v-model="invoice.service_start">
             <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
           </div>
@@ -27,15 +38,22 @@
 
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
+          <label>Número</label>
+          <p v-show="!editing">00000000</p>
+          <input class="form-control" value="00000000">
+        </div>
+        <div class="form-group">
           <label>Fecha</label>
-          <div class="input-group">
+          <p v-show="!editing">{{ invoice.invoice_date }}</p>
+          <div v-else class="input-group">
             <input type="text" class="calendar form-control" v-model="invoice.invoice_date" :disabled="!editing">
             <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
           </div>
         </div>
         <div class="form-group">
           <label>Concepto</label>
-          <select class="form-control" v-model="invoice.concept_type" :disabled="!editing">
+          <p v-show="!editing">{{ invoice.concept_type }}</p>
+          <select v-else class="form-control" v-model="invoice.concept_type">
             <option v-bind:value="1">Productos</option>
             <option v-bind:value="2">Servicios</option>
             <option v-bind:value="3">Productos y servicios</option>
@@ -69,7 +87,7 @@
             </tr>
           </tfoot>
           <tbody>
-            <tr v-for="line in invoicelines">
+            <tr v-for="line in invoice_lines">
               <td>
                 <input id="line-{{$index}}" type="text" class="form-control" :disabled="line._deleted || !editing" />
               </td>
@@ -131,7 +149,7 @@
 <script>
 import ButtonBar from '../../utils/components/ButtonBar.vue'
 import Vue from 'vue'
-import { addInvoice, getInvoices, getInvoiceTypes, getContacts, getProducts } from '../../vuex/actions'
+import { addInvoice, getInvoices, getInvoiceTypes, getContacts, getProducts, getPOSs } from '../../vuex/actions'
 
 export default {
   components: {
@@ -140,14 +158,14 @@ export default {
   computed: {
     net () {
       var sum = 0
-      for (let line of this.invoicelines) {
+      for (let line of this.invoice_lines) {
         sum += line.price_sold * line.quantity * (100 - line.discount) / 100
       }
       return sum
     },
     tax () {
       var sum = 0
-      for (let line of this.invoicelines) {
+      for (let line of this.invoice_lines) {
         sum += (line.price_sold * line.quantity * (100 - line.discount) / 100) * line.vat / 100
       }
       return sum
@@ -167,7 +185,7 @@ export default {
       invoice: {},
       // invoicelines: [{product: '', description: '', price_sold: 3.50, discount: 0, quantity: 3, vat: 21},
       //                {product: '', description: 'Gluten free', price_sold: 7, discount: 0, quantity: 1, vat: 10.5, _deleted: true}],
-      invoicelines: [],
+      invoice_lines: [],
       productPromise: null,
       productEngine: null,
       p1: null,
@@ -182,17 +200,16 @@ export default {
       return true
     },
     authorize () {
-      console.log('wat do')
+      window.alert('no')
     },
     edit () {
-      this.editing = false
+      this.editing = true
     },
     discard () {
       this.$router.go('/accounting/invoices/')
     },
     save () {
       let invoice = {
-        invoicear_company: 'http://localhost:8000/api/invoice_ar/companies/1/',
         invoicear_contact: window.jQuery('#contactInput').val(),
         number: 0,
         invoice_type: this.invoice.invoice_type,
@@ -202,17 +219,26 @@ export default {
         due_date: this.invoice.invoice_date,
         concept_type: `http://localhost:8000/api/invoice_ar/concepttypes/${this.invoice.concept_type}/`
       }
-      invoice.invoice_lines = []
+      invoice.invoice_lines = this.invoice_lines
 
-      this.addInvoice(invoice)
+      invoice.invoice_lines.forEach(function (line, id) {
+        delete line._new
+        delete line._deleted
+        if (!line.discount) {
+          line.discount = 0
+        }
+        line.product = window.jQuery(`#line-${id}`).val()
+      })
 
-      this.editing = false
+      this.addInvoice(invoice).then(function () {
+        this.editing = false
+      })
     },
     getProduct (product) {
       return this.products.find(p => p.url === product.url)
     },
     addItem () {
-      this.invoicelines.push({
+      this.invoice_lines.push({
         _new: true,
         product: null,
         description: '',
@@ -266,8 +292,8 @@ export default {
       elt.on('itemAdded', function (event) {
         var line = event.currentTarget.id.split('-')[1]
         let product = vm.getProduct(event.item)
-        vm.invoicelines[line].price_sold = product.current_price
-        vm.invoicelines[line].vat = product.vat.tax * 100
+        vm.invoice_lines[line].price_sold = product.current_price
+        vm.invoice_lines[line].vat = product.vat.tax * 100
       })
     }
   },
@@ -284,6 +310,7 @@ export default {
     this.p1 = this.getInvoiceTypes()
     this.p2 = this.getContacts()
     this.p3 = this.getProducts()
+    this.p4 = this.getPOSs()
   },
 
   ready () {
@@ -355,8 +382,10 @@ export default {
           ],
           'firstDay': 1
         },
-        'startDate': '2016-08-01',
-        'endDate': '2016-08-31'
+        'startDate': (function () {
+          let today = new Date()
+          return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+        })()
       })
 
       // Init the product inputs
@@ -376,7 +405,8 @@ export default {
       addInvoice,
       getContacts,
       getInvoiceTypes,
-      getProducts
+      getProducts,
+      getPOSs
     }
   }
 }
