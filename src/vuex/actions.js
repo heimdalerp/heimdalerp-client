@@ -4,7 +4,7 @@ export const getFiscalPositions = function ({ _vm, dispatch }) {
 
   var p3 = p.then((promises) => {
     dispatch('ACCOUNTING_FISCALPOSITION_WIPE')
-    for (let fiscalposition of promises[0].body.results) {
+    for (let fiscalposition of promises.data.results) {
       dispatch('ACCOUNTING_FISCALPOSITION_ADD', fiscalposition)
     }
   })
@@ -93,7 +93,7 @@ export const getInvoicesByContact = function ({ _vm, dispatch, state }, contact)
         var p3 = getInvoiceType({ _vm, dispatch }, invoice.invoice_type)
 
         p3.then(function (response) {
-          invoice.invoice_type = state.accounting.invoice_types.all
+          invoice.invoice_type = state.accounting.invoiceTypes.all
             .find(t => t.url === invoice.invoice_type)
             .name.split(' ').reverse()[0]
       //         invoice.invoice_type = response.data.name.split(' ').reverse()[0]
@@ -297,8 +297,8 @@ export const getContact = function ({ _vm, dispatch }, url) {
   return p
 }
 
-export const addContact = function ({ _vm, dispatch }, contact) {
-  var p = _vm.$http.post('invoice_ar/contacts/', contact)
+export const addContact = function ({ _vm, dispatch }, context, contact) {
+  var p = context.$http.post('invoice_ar/contacts/', contact)
   p.then(response => {
     dispatch('ADD_CONTACT', contact)
   })
