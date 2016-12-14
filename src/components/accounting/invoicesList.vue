@@ -54,6 +54,10 @@ export default {
       switch (status) {
         case 'D':
           return 'Borrador'
+        case 'A':
+          return 'Aceptada'
+        case 'T':
+          return 'Autorizada'
       }
     }
   },

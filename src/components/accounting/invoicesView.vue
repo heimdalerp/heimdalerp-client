@@ -200,7 +200,9 @@ export default {
                    {text: 'Autorizar', method: 'authorize', condition: function () { return this.can_authorize() }.bind(this)},
                    {text: 'Cancelar', method: 'cancel', condition: function () { return this.can_cancel() }.bind(this)},
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
-                   {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}
+                   {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'},
+                   {text: 'Generar Crédito', method: 'credit', condition: function () { return true }},
+                   {text: 'Generar Débito', method: 'debit', condition: function () { return true }}
                     ],
       invoice: {},
       // invoicelines: [{product: '', description: '', price_sold: 3.50, discount: 0, quantity: 3, vat: 21},
