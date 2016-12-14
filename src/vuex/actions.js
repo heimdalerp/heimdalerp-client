@@ -22,8 +22,13 @@ export const addInvoice = function ({ _vm, dispatch }, invoice) {
   return p2
 }
 
-export const getInvoices = function ({ _vm, dispatch, state }) {
-  var p = _vm.$http.get('invoice_ar/invoices/')
+export const getInvoices = function ({ _vm, dispatch, state }, invoiceType) {
+  var p
+  if (invoiceType) {
+    p = _vm.$http.get(`invoice_ar/invoicetypes/${invoiceType}/invoices`)
+  } else {
+    p = _vm.$http.get('invoice_ar/invoices/')
+  }
   p.then(function (response) {
     dispatch('ACCOUNTING_INVOICE_WIPE')
   })
@@ -55,7 +60,8 @@ export const getInvoices = function ({ _vm, dispatch, state }) {
       let p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale_ar)
 
       p4.then(function (response) {
-        invoice.point_of_sale_ar = response.data
+        invoice.point_of_sale_ar = state.accounting.pos.all
+          .find(p => p.url === invoice.point_of_sale_ar)
       })
 
       // Resolve the Concept Type
@@ -251,7 +257,7 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSaleURL) {
       dispatch('ACCOUNTING_POS_EDIT', pointOfSale)
     })
 
-    return this
+    return p3
   })
 
   return p2

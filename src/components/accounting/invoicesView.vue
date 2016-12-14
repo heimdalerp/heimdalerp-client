@@ -39,7 +39,7 @@
       <div class="col-sm-6 col-xs-12">
         <div class="form-group" v-if="this.selectedPos.point_of_sale_type !== 'W'">
           <label>Número</label>
-          <p v-show="!editing">00000000</p>
+          <p v-show="!editing">{{ ('00000000' + invoice.number).slice(-8) }}</p>
           <input v-show="editing" class="form-control" value="00000000">
         </div>
         <div class="form-group">
@@ -201,8 +201,8 @@ export default {
                    {text: 'Cancelar', method: 'cancel', condition: function () { return this.can_cancel() }.bind(this)},
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'},
-                   {text: 'Generar Crédito', method: 'credit', condition: function () { return true }},
-                   {text: 'Generar Débito', method: 'debit', condition: function () { return true }}
+                   {text: 'Generar Crédito', method: 'credit', condition: function () { return this.can_credit() }.bind(this)},
+                   {text: 'Generar Débito', method: 'debit', condition: function () { return this.can_debit() }.bind(this)}
                     ],
       invoice: {},
       // invoicelines: [{product: '', description: '', price_sold: 3.50, discount: 0, quantity: 3, vat: 21},
@@ -230,15 +230,26 @@ export default {
     can_cancel () {
       return !this.editing && this.invoice.status === 'A'
     },
+    can_credit () {
+      return this.invoice.status === 'T'
+    },
+    can_debit () {
+      return this.can_credit()
+    },
     authorize () {
       this.$http.patch(`${this.invoice.url}accept/`)
-      window.alert('no')
     },
     edit () {
       this.editing = true
     },
     discard () {
       this.$router.go('/accounting/invoices/')
+    },
+    credit () {
+      this.$router.go(`/accounting/credits/new?invoice=${this.$route.params.invoiceId}`)
+    },
+    debit () {
+      this.$router.go(`/accounting/debits/new?invoice=${this.$route.params.invoiceId}`)
     },
     save () {
       let invoice = {
