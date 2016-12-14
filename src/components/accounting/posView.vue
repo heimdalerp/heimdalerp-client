@@ -118,7 +118,7 @@ export default {
       }
     })
 
-    this.getFiscalPositions
+    this.getFiscalPositions()
   },
 
   vuex: {
