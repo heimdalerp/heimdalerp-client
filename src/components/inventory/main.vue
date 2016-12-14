@@ -5,7 +5,7 @@
 export default {
   created () {
     this.$parent.$data.currentApp = 'Inventario'
-    this.$parent.$data.subMenuElements = [{ name: 'Productos', link: '/inventory/' }]
+    this.$parent.$data.subMenuElements = [{ name: 'Productos', link: '/inventory' }]
   }
 }
 </script>

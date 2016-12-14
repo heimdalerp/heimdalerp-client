@@ -45,7 +45,7 @@ export default {
       bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}],
-      bb_crumbs: ['Contactos'],
+      bb_crumbs: ['Productos'],
       otovats: {name: 'IVA', options: []},
       editing: false,
       product: {}

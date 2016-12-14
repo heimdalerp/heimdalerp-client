@@ -40,7 +40,7 @@ export default {
 
   methods: {
     create () {
-      this.$router.go('/products/new')
+      this.$router.go('/inventory/products/new')
     }
   },
 
