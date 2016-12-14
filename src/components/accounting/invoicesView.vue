@@ -3,25 +3,25 @@
     <button-bar :crumbs="bb_crumbs" :buttons="bb_buttons"></button-bar>
     <div class="jumbotron container">
       <div id="workflow" style="text-align: right; margin: -20px -60px 20px -60px; padding-right: 20px; min-height: 50px; background-color: lightgray; font-size: 1.5em">
-        <span ><span class="workflow_current" style="font-weight: bold">Draft</span> > Authorized</span>
+        <span ><span class="workflow_current" style="font-weight: bold">{{ invoice.status }}</span>
       </div>
 
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
           <label>Punto de venta</label>
-          <p v-show="!editing">0001</p>
-          <select v-else class="form-control">
-            <option>1</option>
+          <p v-show="!editing">{{ `000${invoice.point_of_sale_ar.afip_id}`.slice(-4) + ` - ${invoice.point_of_sale_ar.fantasy_name}`}}</p>
+          <select v-else class="form-control" v-model="pointofsale">
+            <option v-for="pos in pointsofsale" :value="pos.url">{{ pos.fantasy_name }}</option>
           </select>
         </div>
         <div class="form-group" style="max-height: 59px">
           <label>Contacto</label>
-          <p v-show="!editing">{{ invoice.invoicear_contact }}</p>
+          <p v-show="!editing">{{ invoice.invoicear_contact.invoice_contact.legal_name }}</p>
           <span v-else><input id="contactInput" type="text" class="form-control"></span>
         </div>
         <div class="form-group">
           <label>Tipo</label>
-          <p v-show="!editing">{{ invoice.invoice_type }}</p>
+          <p v-show="!editing">{{ invoice.invoice_type.name }}</p>
           <select v-else class="form-control" v-model="invoice.invoice_type">
             <option v-for="InvoiceType in invoiceTypes" value="{{ InvoiceType.url }}">{{ InvoiceType.name }}</option>
           </select>
@@ -37,10 +37,10 @@
       </div>
 
       <div class="col-sm-6 col-xs-12">
-        <div class="form-group">
+        <div class="form-group" v-if="this.selectedPos.point_of_sale_type !== 'W'">
           <label>Número</label>
           <p v-show="!editing">00000000</p>
-          <input class="form-control" value="00000000">
+          <input v-show="editing" class="form-control" value="00000000">
         </div>
         <div class="form-group">
           <label>Fecha</label>
@@ -52,7 +52,7 @@
         </div>
         <div class="form-group">
           <label>Concepto</label>
-          <p v-show="!editing">{{ invoice.concept_type }}</p>
+          <p v-show="!editing">{{ invoice.concept_type.name }}</p>
           <select v-else class="form-control" v-model="invoice.concept_type">
             <option v-bind:value="1">Productos</option>
             <option v-bind:value="2">Servicios</option>
@@ -81,12 +81,12 @@
               <th></th>
             </tr>
           </thead>
-          <tfoot>
+          <tfoot v-if="editing">
             <tr colspan="6">
               <td @click="addItem"><span class="glyphicon glyphicon-plus"></span> Agregar item</td>
             </tr>
           </tfoot>
-          <tbody>
+          <tbody v-if="editing">
             <tr v-for="line in invoice_lines">
               <td>
                 <input id="line-{{$index}}" type="text" class="form-control" :disabled="line._deleted || !editing" />
@@ -112,33 +112,47 @@
               </td>
             </tr>
           </tbody>
+          <tbody v-else>
+            <tr v-for="line in invoice.invoice_lines">
+              <td>{{ line.product.name }}</td>
+              <td>{{ line.description | default }}</td>
+              <td>{{ line.quantity }}</td>
+              <td>${{ line.price_sold }}</td>
+              <td>{{ line.discount }}</td>
+              <td>{{ line.product.vat.name }}
+            </tr>
+          </tbody>
         </table>
       </div>
-      <div class="col-md-8">
+
+      <div class="col-xs-8">
       </div>
-      <div class="col-md-4">
-        <div class="col-md-12">
-          <div class="col-md-4">
+      <div class="col-xs-4">
+        <div class="col-xs-12">
+          <div class="col-xs-4">
             <label>Neto:</label>
           </div>
-          <div class="col-md-8">
-            ${{ net }}
+          <div class="col-xs-8">
+            <span v-if="editing">${{ net }}</span>
+            <span v-else>${{ invoice.subtotal }}</span>
           </div>
         </div>
-        <div class="col-md-12">
-          <div class="col-md-4">
+        <div class="col-xs-12">
+          <div class="col-xs-4">
             <label>Impuestos:</label>
           </div>
-          <div class="col-md-8">
-            ${{ tax }}
+          <div class="col-xs-8">
+            <span v-if="editing">${{ tax }}</span>
+            <span v-else>${{ invoice.vat_total }}</span>
           </div>
         </div>
-        <div class="col-md-12">
-          <div class="col-md-4">
+        <div class="col-xs-12">
+          <div class="col-xs-4">
             <label>Total:</label>
           </div>
-          <div class="col-md-8">
-            ${{ total }}
+          <div class="col-xs-8">
+            <span v-if="editing">${{ total }}</span>
+            <span v-else>${{ invoice.total }}</span>
           </div>
         </div>
       </div>
@@ -156,29 +170,35 @@ export default {
     ButtonBar
   },
   computed: {
+    selectedPos () {
+      if (this.pointsofsale) {
+        return this.pointsofsale.find(p => p.url === this.pointofsale) || {}
+      }
+    },
     net () {
       var sum = 0
       for (let line of this.invoice_lines) {
         sum += line.price_sold * line.quantity * (100 - line.discount) / 100
       }
-      return sum
+      return parseFloat(sum.toFixed(2))
     },
     tax () {
       var sum = 0
       for (let line of this.invoice_lines) {
         sum += (line.price_sold * line.quantity * (100 - line.discount) / 100) * line.vat / 100
       }
-      return sum
+      return sum.toFixed(2)
     },
     total () {
-      return this.net + this.tax
+      return (parseFloat(this.net) + parseFloat(this.tax)).toFixed(2)
     }
   },
   data () {
     return {
       bb_crumbs: ['Contabilidad', 'Facturas', 'Ingresar'],
-      bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
-                   {text: 'Autorizar', method: 'authorize', condition: function () { return this.can_authorize }.bind(this)},
+      bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return this.can_edit() }.bind(this)},
+                   {text: 'Autorizar', method: 'authorize', condition: function () { return this.can_authorize() }.bind(this)},
+                   {text: 'Cancelar', method: 'cancel', condition: function () { return this.can_cancel() }.bind(this)},
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}
                     ],
@@ -192,14 +212,24 @@ export default {
       p2: null,
       p3: null,
       p4: null,
-      editing: true
+      p5: null,
+      editing: true,
+      pointofsale: null
     }
   },
   methods: {
     can_authorize () {
-      return true
+      console.log(!this.editing && this.invoice.status === 'D')
+      return !this.editing && this.invoice.status === 'D'
+    },
+    can_edit () {
+      return !this.editing && this.invoice.status === 'D'
+    },
+    can_cancel () {
+      return !this.editing && this.invoice.status === 'A'
     },
     authorize () {
+      this.$http.patch(`${this.invoice.url}accept/`)
       window.alert('no')
     },
     edit () {
@@ -215,7 +245,7 @@ export default {
         invoice_type: this.invoice.invoice_type,
         invoice_date: this.invoice.invoice_date,
         notes: '',
-        point_of_sale_ar: 'http://localhost:8000/api/invoice_ar/pointsofsalear/1/',
+        point_of_sale_ar: this.pointofsale,
         due_date: this.invoice.invoice_date,
         concept_type: `http://localhost:8000/api/invoice_ar/concepttypes/${this.invoice.concept_type}/`
       }
@@ -300,23 +330,36 @@ export default {
 
   created () {
     var vm = this
-    this.p4 = this.getInvoices()
-    if (this.$route.params.invoiceId !== 'new') {
-      this.editing = false
-      this.invoice = Object.assign({}, this.invoices.all.find(function (i) {
-        return i.id === parseInt(vm.$route.params.invoiceId)
-      }))
-    }
-    this.p1 = this.getInvoiceTypes()
-    this.p2 = this.getContacts()
-    this.p3 = this.getProducts()
-    this.p4 = this.getPOSs()
-  },
 
+    this.invoice = {
+      invoicear_contact: {
+        invoice_contact: {}
+      },
+      concept_type: {},
+      invoice_type: {},
+      point_of_sale_ar: {}
+    }
+
+    this.p1 = this.getInvoices()
+    this.p1.then(function () {
+      if (vm.$route.params.invoiceId !== 'new') {
+        vm.editing = false
+        vm.invoice = Object.assign({}, vm.invoices.find(function (i) {
+          console.log(i)
+          return i.id === parseInt(vm.$route.params.invoiceId)
+        }))
+      }
+    })
+    this.p2 = this.getInvoiceTypes()
+    this.p3 = this.getContacts()
+    this.p4 = this.getProducts()
+    this.p5 = this.getPOSs()
+  },
+  /*
   ready () {
     var vm = this
 
-    Promise.all([this.p1, this.p2, this.p3, this.p4]).then(function () {
+    Promise.all([this.p1, this.p2, this.p3, this.p4, this.p5]).then(function () {
       // Init the contact input
       var bhContacts = vm.contacts.map(function (contact) {
         var map = {}
@@ -392,13 +435,14 @@ export default {
       vm.initProducts()
     })
   },
-
+  */
   vuex: {
     getters: {
-      invoiceTypes: state => state.accounting.invoiceTypes.all.filter(it => it.invoice_type_class === 'B'),
+      invoices: state => state.accounting.invoices.all,
+      invoiceTypes: state => state.accounting.invoiceTypes.all, // .filter(it => it.invoice_type_class === 'B'),
       contacts: state => state.contacts.all,
       products: state => state.accounting.products.all,
-      invoices: state => state.accounting.invoices
+      pointsofsale: state => state.accounting.pos.all
     },
     actions: {
       getInvoices,

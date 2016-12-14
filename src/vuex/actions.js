@@ -28,45 +28,63 @@ export const getInvoices = function ({ _vm, dispatch, state }) {
     dispatch('ACCOUNTING_INVOICE_WIPE')
   })
 
-  p.then(function (response) {
+  let p2 = p.then(function (response) {
     var promises = []
+
     for (let invoice of response.data.results) {
-      // Fetch the contact name
-      var p2 = getContact({ _vm, dispatch }, invoice.invoicear_contact)
+      // Resolve the Contact
+      let p2 = getContact({ _vm, dispatch }, invoice.invoicear_contact)
 
       p2.then(function (response) {
         invoice.invoicear_contact = state.contacts.all
           .find(c => c.url === invoice.invoicear_contact)
-          .invoice_contact.legal_name
       })
 
-      // Fetch the invoice type
+      // Resolve the invoice type
+      let p3
       if (invoice.invoice_type !== null) {
-        // var p3 = this.$http.get(invoice.invoice_type)
-        var p3 = getInvoiceType({ _vm, dispatch }, invoice.invoice_type)
+        p3 = getInvoiceType({ _vm, dispatch }, invoice.invoice_type)
 
         p3.then(function (response) {
           invoice.invoice_type = state.accounting.invoiceTypes.all
             .find(t => t.url === invoice.invoice_type)
-            .name.split(' ').reverse()[0]
-      //         invoice.invoice_type = response.data.name.split(' ').reverse()[0]
         })
       }
 
-      // Fetch the point of sale number
-      var p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale_ar)
+      // Resolve the Point of Sale
+      let p4 = getPOS({ _vm, dispatch }, invoice.point_of_sale_ar)
 
       p4.then(function (response) {
-        invoice.point_of_sale_ar = ('000' + response.data.afip_id).slice(-4)
+        invoice.point_of_sale_ar = response.data
       })
 
-      promises.push(Promise.all([p2, p3, p4]).then(function (values) {
+      // Resolve the Concept Type
+      let p5 = getInvoiceType({_vm, dispatch}, invoice.concept_type)
+
+      p5.then(function (response) {
+        invoice.concept_type = response.data
+      })
+
+      // Resolve its product lines
+      let p6 = getProducts({_vm, dispatch})
+
+      p6.then(function (response) {
+        invoice.invoice_lines.forEach(function (line) {
+          let product = state.accounting.products.all.find(p => p.url === line.product)
+          line.product = {}
+          line.product.name = product.name
+          line.product.vat = product.vat
+        })
+      })
+
+      promises.push(Promise.all([p2, p3, p4, p5, p6]).then(function (values) {
         dispatch('ACCOUNTING_INVOICE_ADD', invoice)
       }))
     }
+    return Promise.all(promises)
   })
 
-  return p
+  return p2
 }
 
 export const getInvoicesByContact = function ({ _vm, dispatch, state }, contact) {
@@ -118,14 +136,15 @@ export const getInvoicesByContact = function ({ _vm, dispatch, state }, contact)
   return p
 }
 
-export const getInvoiceType = function ({ _vm, dispatch }, invoiceType) {
-  var p = _vm.$http.get(invoiceType)
+export const getInvoiceType = function ({ _vm, dispatch }, invoiceTypeURL) {
+  var p = _vm.$http.get(invoiceTypeURL)
 
-  p.then(function (response) {
+  let invoiceType = p.then(function (response) {
     dispatch('ACCOUNTING_INVOICETYPE_ADD', response.data)
+    return response
   })
 
-  return p
+  return invoiceType
 }
 
 export const getInvoiceTypes = function ({ _vm, dispatch }) {
@@ -218,17 +237,17 @@ export const getPOSs = function ({ dispatch }) {
   return p2
 }
 
-export const getPOS = function ({ _vm, dispatch }, pointOfSale) {
-  var p = _vm.$http.get(pointOfSale)
+export const getPOS = function ({ _vm, dispatch }, pointOfSaleURL) {
+  var p = _vm.$http.get(pointOfSaleURL)
 
   // Populate its addresses
   p.then(function (response) {
-    pointOfSale = response.data
+    var pointOfSale = response.data
     var p2 = _vm.$http.get(pointOfSale.fiscal_address.url)
 
     p2.then(function (response) {
-      pointOfSale.fiscal_address = response.data.street_address + ' P' +
-      response.data.floor_number + ' D' + response.data.apartment_number
+      pointOfSale.fiscal_address = response.data // response.data.street_address + ' P' +
+      // response.data.floor_number + ' D' + response.data.apartment_number
       dispatch('ACCOUNTING_POS_EDIT', pointOfSale)
     })
   })

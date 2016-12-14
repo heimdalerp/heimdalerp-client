@@ -14,7 +14,7 @@
       <tbody>
         <tr v-for="invoice in invoices" v-link="'/accounting/invoices/' + invoice.id">
           <td><input type="checkbox"></td>
-          <td>{{ invoice.invoicear_contact }}</td>
+          <td>{{ invoice.invoicear_contact.invoice_contact.legal_name }}</td>
           <td>{{ invoice.due_date }}</td>
           <td v-if="invoice.invoice_type !== null && invoice.number !== 0">{{ invoice.invoice_type + invoice.point_of_sale_ar + '-' + ('0000000' + invoice.number).slice(-8) }}</td>
           <td v-else>-</td>
