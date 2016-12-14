@@ -58,17 +58,23 @@ router.map({
       '/billing/:paymentId/': {
         component: require('components/accounting/billingView')
       },
-      '/ledger/': {
-        component: require('components/accounting/ledgerList')
+      '/credits/': {
+        component: require('components/accounting/creditsList')
       },
-      '/ledger/:contactId/': {
-        component: require('components/accounting/ledgerView')
+      '/credits/:invoiceId/': {
+        component: require('components/accounting/creditsView')
       },
       '/invoices/': {
         component: require('components/accounting/invoicesList')
       },
       '/invoices/:invoiceId/': {
         component: require('components/accounting/invoicesView')
+      },
+      '/ledger/': {
+        component: require('components/accounting/ledgerList')
+      },
+      '/ledger/:contactId/': {
+        component: require('components/accounting/ledgerView')
       },
       '/pointsofsale/': {
         component: require('components/accounting/posList')
