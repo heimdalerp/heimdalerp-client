@@ -241,18 +241,20 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSaleURL) {
   var p = _vm.$http.get(pointOfSaleURL)
 
   // Populate its addresses
-  p.then(function (response) {
+  var p2 = p.then(function (response) {
     var pointOfSale = response.data
-    var p2 = _vm.$http.get(pointOfSale.fiscal_address.url)
+    var p3 = _vm.$http.get(pointOfSale.fiscal_address.url)
 
-    p2.then(function (response) {
+    p3.then(function (response) {
       pointOfSale.fiscal_address = response.data // response.data.street_address + ' P' +
       // response.data.floor_number + ' D' + response.data.apartment_number
       dispatch('ACCOUNTING_POS_EDIT', pointOfSale)
     })
+
+    return this
   })
 
-  return p
+  return p2
 }
 
 export const addProduct = function ({ _vm, dispatch }, product) {
