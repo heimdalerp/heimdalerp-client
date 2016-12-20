@@ -34,7 +34,7 @@
 import ButtonBar from '../../utils/components/ButtonBar.vue'
 import { getInvoices } from '../../vuex/actions'
 
-const INVOICE_TYPE_CREDIT_ID = '2'
+const INVOICE_TYPE_DEBIT_ID = '0'
 
 export default {
   components: {
@@ -43,7 +43,7 @@ export default {
 
   data: function () {
     return {
-      bb_crumbs: ['Contabilidad', 'Notas de Crédito']
+      bb_crumbs: ['Contabilidad', 'Notas de Débito']
     }
   },
 
@@ -61,7 +61,7 @@ export default {
   },
 
   compiled () {
-    this.getInvoices(INVOICE_TYPE_CREDIT_ID)
+    this.getInvoices(INVOICE_TYPE_DEBIT_ID)
   },
 
   vuex: {
