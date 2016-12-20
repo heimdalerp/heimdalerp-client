@@ -117,8 +117,6 @@ export default {
         this.bb_crumbs.push(this.pos.afip_id)
       }
     })
-
-    this.getFiscalPositions()
   },
 
   vuex: {
