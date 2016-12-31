@@ -26,14 +26,6 @@
             <option v-for="InvoiceType in invoiceTypes" value="{{ InvoiceType.url }}">{{ InvoiceType.name }}</option>
           </select>
         </div>
-        <div v-show="invoice.concept_type > 1" class="form-group">
-          <label>Desde</label>
-          <p v-show="!editing">{{ invoice.service_start }}</p>
-          <div class="input-group" v-else>
-            <input type="text" class="calendar form-control" v-model="invoice.service_start">
-            <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
-          </div>
-        </div>
       </div>
 
       <div class="col-sm-6 col-xs-12">
@@ -44,7 +36,7 @@
         </div>
         <div class="form-group">
           <label>Fecha</label>
-          <p v-show="!editing">{{ invoice.invoice_date }}</p>
+          <p v-if="!editing">{{ invoice.invoice_date }}</p>
           <div v-else class="input-group">
             <input type="text" class="calendar form-control" v-model="invoice.invoice_date" :disabled="!editing">
             <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
@@ -59,16 +51,32 @@
             <option v-bind:value="3">Productos y servicios</option>
           </select>
         </div>
-        <div v-show="invoice.concept_type > 1" class="form-group">
-          <label>Hasta</label>
-          <div class="input-group">
-            <input type="text" class="calendar form-control" v-model="invoice.service_end">
-            <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <div v-show="invoice.concept_type > 1" class="form-group">
+            <label>Desde</label>
+            <p v-show="!editing">{{ invoice.service_start }}</p>
+            <div class="input-group" v-else>
+              <input type="text" class="calendar form-control" v-model="invoice.service_start">
+              <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div v-show="invoice.concept_type > 1" class="form-group">
+            <label>Hasta</label>
+            <div class="input-group">
+              <input type="text" class="calendar form-control" v-model="invoice.service_end">
+              <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="col-sm-12 col-xs-12">
+      <div class="col-xs-12">
         <table class="table table-striped table-condensed">
           <thead>
             <tr>
@@ -205,8 +213,6 @@ export default {
                    {text: 'Generar Débito', method: 'debit', condition: function () { return this.can_debit() }.bind(this)}
                     ],
       invoice: {},
-      // invoicelines: [{product: '', description: '', price_sold: 3.50, discount: 0, quantity: 3, vat: 21},
-      //                {product: '', description: 'Gluten free', price_sold: 7, discount: 0, quantity: 1, vat: 10.5, _deleted: true}],
       invoice_lines: [],
       productPromise: null,
       productEngine: null,
@@ -221,7 +227,6 @@ export default {
   },
   methods: {
     can_authorize () {
-      console.log(!this.editing && this.invoice.status === 'D')
       return !this.editing && this.invoice.status === 'D'
     },
     can_edit () {
@@ -240,6 +245,9 @@ export default {
       this.$http.patch(`${this.invoice.url}accept/`)
     },
     edit () {
+      this.pointofsale = this.invoice.point_of_sale_ar.url
+      this.invoice.invoice_type = this.invoice.invoice_type.url
+      this.invoice.concept_type = this.invoice.concept_type.id
       this.editing = true
     },
     discard () {
@@ -273,9 +281,12 @@ export default {
         line.product = window.jQuery(`#line-${id}`).val()
       })
 
-      this.addInvoice(invoice).then(function () {
-        this.editing = false
-      })
+      if (this.$route.params.invoiceId === 'new') {
+        this.addInvoice(invoice).then(function (response) {
+          console.log(response)
+          this.$router.go(`/accounting/invoices/${response.data.id}/`)
+        })
+      }
     },
     getProduct (product) {
       return this.products.find(p => p.url === product.url)
@@ -357,10 +368,10 @@ export default {
     this.p1.then(function () {
       if (vm.$route.params.invoiceId !== 'new') {
         vm.editing = false
-        vm.invoice = Object.assign({}, vm.invoices.find(function (i) {
-          console.log(i)
+
+        vm.invoice = JSON.parse(JSON.stringify(vm.invoices.find(function (i) {
           return i.id === parseInt(vm.$route.params.invoiceId)
-        }))
+        })))
       }
     })
     this.p2 = this.getInvoiceTypes()
@@ -368,7 +379,7 @@ export default {
     this.p4 = this.getProducts()
     this.p5 = this.getPOSs()
   },
-  /*
+
   ready () {
     var vm = this
 
@@ -448,11 +459,11 @@ export default {
       vm.initProducts()
     })
   },
-  */
+
   vuex: {
     getters: {
       invoices: state => state.accounting.invoices.all,
-      invoiceTypes: state => state.accounting.invoiceTypes.all, // .filter(it => it.invoice_type_class === 'B'),
+      invoiceTypes: state => state.accounting.invoiceTypes.all,
       contacts: state => state.contacts.all,
       products: state => state.accounting.products.all,
       pointsofsale: state => state.accounting.pos.all
