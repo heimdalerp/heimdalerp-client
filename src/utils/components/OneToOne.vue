@@ -1,8 +1,8 @@
 <template>
 <div>
-  <label for="{{id}}">{{name}}:</label>
-  <select id="{{id}}" class="form-control" v-model="model">
-    <option v-for="option in options" value="{{ option[key] || option.id }}">{{ option.name }}</option>
+  <label :for="id">{{ name }}:</label>
+  <select :id="id" class="form-control" v-model="model">
+    <option v-for="option in options" :value="option[key] || option.id">{{ option.name }}</option>
   </select>
 </div>
 </template>
