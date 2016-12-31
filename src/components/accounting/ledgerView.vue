@@ -94,8 +94,7 @@ export default {
           vm.db.insert(invoice)
         })
 
-        // Should check year of first invoice and year of last
-        // and iterate over that too. Now 2016 is hardcoded.
+        // TODO: Iterate between the months of the oldest and newest invoice
         for (let i = 1; i <= 12; i++) {
           var subtotalMonth = 0
           var iPad = ('00' + i).substring(i.toString().length)
