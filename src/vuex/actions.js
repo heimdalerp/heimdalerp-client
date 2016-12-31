@@ -15,20 +15,17 @@ export const getFiscalPositions = function ({ _vm, dispatch }) {
 export const addInvoice = function ({ _vm, dispatch }, invoice) {
   var p = this.$http.post('invoice_ar/invoices/', invoice)
 
-  var p2 = p.then(function (response) {
+  p.then(function () {
     dispatch('ACCOUNTING_INVOICE_ADD', invoice)
   })
 
-  return p2
+  return p
 }
 
-export const getInvoices = function ({ _vm, dispatch, state }, invoiceType) {
+export const getInvoices = function ({ _vm, dispatch, state }) {
   var p
-  if (invoiceType) {
-    p = _vm.$http.get(`invoice_ar/invoicetypes/${invoiceType}/invoices`)
-  } else {
-    p = _vm.$http.get('invoice_ar/invoices/')
-  }
+  p = _vm.$http.get('invoice_ar/invoices/')
+
   p.then(function (response) {
     dispatch('ACCOUNTING_INVOICE_WIPE')
   })
@@ -226,6 +223,16 @@ export const addPOS = function ({ dispatch }, pos) {
   return p
 }
 
+export const editPOS = function ({ dispatch }, context, pos) {
+  var p = context.$http.put(`invoice_ar/pointsofsalear/${pos.id}/`, pos)
+
+  p.then(function (result) {
+    dispatch('ACCOUNTING_POS_EDIT', pos)
+  })
+
+  return p
+}
+
 export const getPOSs = function ({ dispatch }) {
   var p = this.$http.get('invoice_ar/pointsofsalear/')
 
@@ -252,8 +259,7 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSaleURL) {
     var p3 = _vm.$http.get(pointOfSale.fiscal_address.url)
 
     p3.then(function (response) {
-      pointOfSale.fiscal_address = response.data // response.data.street_address + ' P' +
-      // response.data.floor_number + ' D' + response.data.apartment_number
+      pointOfSale.fiscal_address = response.data
       dispatch('ACCOUNTING_POS_EDIT', pointOfSale)
     })
 
