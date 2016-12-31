@@ -64,6 +64,9 @@ router.map({
       '/credits/:invoiceId/': {
         component: require('components/accounting/creditsView')
       },
+      '/debits/': {
+        component: require('components/accounting/debitsList')
+      },
       '/invoices/': {
         component: require('components/accounting/invoicesList')
       },
@@ -133,6 +136,11 @@ router.beforeEach(function (transition) {
 Vue.filter('default', function (value, _default) {
   return value || _default
 })
+
+Vue.component('Address', require('src/utils/components/Address.vue'))
+Vue.component('ButtonBar', require('src/utils/components/ButtonBar.vue'))
+Vue.component('Locality', require('src/utils/components/Locality.vue'))
+Vue.component('OneToOne', require('src/utils/components/OneToOne.vue'))
 
 // Showtime
 window.addEventListener('load', function () {

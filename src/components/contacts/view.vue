@@ -54,37 +54,8 @@
 
         <!-- Left column -->
         <div class="col-sm-6 col-xs-12">
-          <div class="col-xs-12">
-            <div class="form-group">
-              <label for="addr">Domicilio</label>
-              <input id="addr" placeholder="Ej. Av. de Mayo 1773" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.street_address"/>
-              <p v-if="!editing">{{invoice_ar_contact.invoice_contact.fiscal_address.street_address | default '-'}}</p>
-            </div>
-          </div>
-          <div class="col-xs-4">
-            <label for="floor">Piso</label>
-            <input id="addr" placeholder="Ej. 7" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.floor_number"/>
-            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_address.floor_number | default '-' }}</p>
-          </div>
-          <div class="col-xs-4">
-            <label for="apartment">Dpto</label>
-            <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.apartment_number"/>
-            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_address.apartment_number | default '-' }}</p>
-          </div>
-          <div class="col-xs-4">
-            <label for="postal">CP</label>
-            <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.fiscal_address.postal_code"/>
-            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_address.postal_code }}</p>
-          </div>
-          <div class="col-xs-4" v-if="false">
-            <one-to-one v-if="editing" :name="otocountry.name" :options="otocountry.options" :model.sync="country"></one-to-one>
-          </div>
-          <div class="col-xs-4" v-if="false">
-            <one-to-one v-if="editing" :name="otoregion.name" :options="otoregion.options" :model.sync="region"></one-to-one>
-          </div>
-          <div class="col-xs-4" id="watup" v-if="false">
-            <one-to-one v-if="editing" :name="otolocality.name" :options="otolocality.options" :model.sync="invoice_ar_contact.invoice_contact.fiscal_address.locality"></one-to-one>
-          </div>
+          <address :editing="editing" v-on:update="updateAddress" :value="invoice_ar_contact.invoice_contact.fiscal_address"></address>
+          <locality :editing="editing" v-on:update="updateLocality" :url="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
         </div>
 
         <!-- Right column -->
@@ -116,11 +87,6 @@ import auth from '../../auth/index.js'
 import { addContact, editContact, getContacts, getFiscalPositions } from '../../vuex/actions'
 
 export default {
-  components: {
-    'ButtonBar': require('../../utils/components/ButtonBar.vue'),
-    'OneToOne': require('../../utils/components/OneToOne.vue')
-  },
-
   data () {
     return {
       bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
@@ -129,11 +95,6 @@ export default {
       bb_crumbs: ['Contactos'],
       otofiscal: {name: 'Posición fiscal', options: []},
       otoidtype: {name: 'Identificación', options: [{id: 'D', name: 'DNI'}, {id: 'T', name: 'CUIT'}, {id: 'L', name: 'CUIL'}]},
-      otolocality: {name: 'Ciudad', options: []},
-      otoregion: {name: 'Provincia', options: []},
-      otocountry: {name: 'País', options: []},
-      region: '',
-      country: '',
       editing: false,
       invoice_ar_contact: {}
     }
@@ -228,6 +189,12 @@ export default {
           this.$router.go('/contacts')
         })
       }
+    },
+    updateAddress (address) {
+      this.invoice_ar_contact.invoice_contact.fiscal_address = address
+    },
+    updateLocality (url) {
+      this.invoice_ar_contact.invoice_contact.fiscal_address.locality = url
     }
   },
 
@@ -238,9 +205,6 @@ export default {
       invoice_contact: {
         fiscal_position: null,
         fiscal_address: {
-          floor_number: '',
-          apartment_number: '',
-          postal_code: ''
         },
         contact_contact: {
           contact_type: 'C',
@@ -257,7 +221,7 @@ export default {
         vm.editing = true
         vm.bb_crumbs.push('Crear nuevo contacto')
       } else {
-        vm.invoice_ar_contact = Object.assign({}, vm.contact)
+        vm.invoice_ar_contact = JSON.parse(JSON.stringify(vm.contact))
         vm.bb_crumbs.push(vm.invoice_ar_contact.invoice_contact.contact_contact.name)
       }
     })
