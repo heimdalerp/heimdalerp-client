@@ -16,7 +16,7 @@
           <td><input type="checkbox"></td>
           <td>{{ invoice.invoicear_contact.invoice_contact.legal_name }}</td>
           <td>{{ invoice.due_date }}</td>
-          <td v-if="invoice.invoice_type !== null && invoice.number !== 0">{{ invoice.invoice_type + invoice.point_of_sale_ar + '-' + ('0000000' + invoice.number).slice(-8) }}</td>
+          <td v-if="invoice.invoice_type !== null && invoice.number !== 0">{{ invoice.invoice_type.invoice_type_class + ('000' + invoice.point_of_sale_ar.afip_id).slice(-4) + '-' + ('0000000' + invoice.number).slice(-8) }}</td>
           <td v-else>-</td>
           <td>{{ invoice.due_date }}</td>
           <td>$ {{ invoice.total }}</td>
@@ -31,14 +31,9 @@
 </template>
 
 <script>
-import ButtonBar from '../../utils/components/ButtonBar.vue'
 import { getInvoices } from '../../vuex/actions'
 
 export default {
-  components: {
-    ButtonBar
-  },
-
   data: function () {
     return {
       bb_crumbs: ['Contabilidad', 'Facturas'],
@@ -62,13 +57,14 @@ export default {
     }
   },
 
-  compiled () {
+  created () {
     this.getInvoices()
   },
 
   vuex: {
     getters: {
       invoices: store => store.accounting.invoices.all
+        .filter(i => i.invoice_type.invoice_type_class === 'B')
     },
     actions: {
       getInvoices
