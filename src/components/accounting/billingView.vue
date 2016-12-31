@@ -215,8 +215,10 @@ export default {
           ],
           'firstDay': 1
         },
-        'startDate': '2016-08-01',
-        'endDate': '2016-08-31'
+        'startDate': (function () {
+          let today = new Date()
+          return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+        })()
       })
     }
   },
