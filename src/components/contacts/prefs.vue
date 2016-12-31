@@ -23,10 +23,6 @@
 </template>
 <script>
 export default {
-  components: {
-    'ButtonBar': require('../../utils/components/ButtonBar.vue'),
-    'OneToOne': require('../../utils/components/OneToOneNext.vue')
-  },
   data () {
     return {
       bb: {

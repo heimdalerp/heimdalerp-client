@@ -35,11 +35,6 @@ import auth from '../../auth/index.js'
 import { getProducts, addProduct, editProduct, getVATs } from '../../vuex/actions'
 
 export default {
-  components: {
-    'ButtonBar': require('../../utils/components/ButtonBar.vue'),
-    'OneToOne': require('../../utils/components/OneToOne.vue')
-  },
-
   data () {
     return {
       bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},

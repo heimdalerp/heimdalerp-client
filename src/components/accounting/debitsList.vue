@@ -31,16 +31,9 @@
 </template>
 
 <script>
-import ButtonBar from '../../utils/components/ButtonBar.vue'
 import { getInvoices } from '../../vuex/actions'
 
-const INVOICE_TYPE_DEBIT_ID = '0'
-
 export default {
-  components: {
-    ButtonBar
-  },
-
   data: function () {
     return {
       bb_crumbs: ['Contabilidad', 'Notas de Débito']
@@ -61,12 +54,13 @@ export default {
   },
 
   compiled () {
-    this.getInvoices(INVOICE_TYPE_DEBIT_ID)
+    this.getInvoices()
   },
 
   vuex: {
     getters: {
       invoices: store => store.accounting.invoices.all
+        .filter(i => i.invoice_type.invoice_type_class === 'D')
     },
     actions: {
       getInvoices

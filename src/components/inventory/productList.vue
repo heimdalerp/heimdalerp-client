@@ -27,10 +27,6 @@
 import { getProducts } from 'src/vuex/actions'
 
 export default {
-  components: {
-    'ButtonBar': require('../../utils/components/ButtonBar.vue')
-  },
-
   data () {
     return {
       bb_crumbs: ['Inventario'],
