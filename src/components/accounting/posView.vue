@@ -2,18 +2,15 @@
   <div>
     <button-bar :crumbs="bb_crumbs" :buttons="bb_buttons"></button-bar>
     <div class="jumbotron container">
-      <div class="col-sm-12 col-xs-12">
+      <div class="col-xs-12">
         <div class="form-group">
           <label>Nombre de fantasía</label>
           <input v-if="editing" type='text' class='form-control' v-model="pos.fantasy_name" />
           <p v-else>{{ pos.fantasy_name }}</p>
         </div>
-        <div class="form-group">
-          <label>Domicilio Fiscal</label>
-          <input v-if="editing" type='text' class='form-control' v-model="pos.fiscal_address.street_address" />
-          <p v-else>{{ pos.fiscal_address.street_address }}</p>
-        </div>
       </div>
+      <address :editing="editing" @update="updateAddress" :value="pos.fiscal_address"></address>
+      <locality :editing="editing" @update="updateLocality" :url="pos.fiscal_address.locality"></locality>
 
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
@@ -34,14 +31,10 @@
   </div>
 </template>
 <script>
-import { addPOS, getPOSs } from '../../vuex/actions'
+import { addPOS, editPOS, getPOSs } from '../../vuex/actions'
 import auth from '../../auth/index'
 
 export default {
-  components: {
-    'ButtonBar': require('../../utils/components/ButtonBar.vue'),
-    'OneToOne': require('../../utils/components/OneToOne.vue')
-  },
   computed: {
     type_string () {
       switch (this.pos.point_of_sale_type) {
@@ -90,22 +83,28 @@ export default {
       }
     },
     save () {
-      this.addPOS(this.pos).then(() => {
-        this.$router.go('/accounting/pointsofsale/')
-      })
+      if (this.$route.params.posId === 'new') {
+        this.addPOS(this.pos).then(response => {
+          this.$router.go('/accounting/pointsofsale/' + response.data.id + '/')
+        })
+      } else {
+        this.editPOS(this, this.pos).then(() => {
+          this.$router.go('/accounting/pointsofsale')
+        })
+      }
+    },
+    updateAddress (address) {
+      this.pos.fiscal_address = address
+    },
+    updateLocality (url) {
+      this.pos.fiscal_address.locality = url
     }
   },
 
   created () {
     this.pos = Object.assign({}, {
       invoicear_company: auth.user.company_ar,
-      fiscal_address: {
-        'street_address': '',
-        'floor_number': '',
-        'apartment_number': '',
-        'locality': null,
-        'postal_code': ''
-      }
+      fiscal_address: {}
     })
 
     this.getPOSs().then(function (response) {
@@ -113,7 +112,7 @@ export default {
         this.editing = true
         this.bb_crumbs.push('Crear nuevo Punto de Venta')
       } else {
-        this.pos = this.currentPos
+        this.pos = JSON.parse(JSON.stringify(this.currentPos))
         this.bb_crumbs.push(this.pos.afip_id)
       }
     })
@@ -125,6 +124,7 @@ export default {
     },
     actions: {
       addPOS,
+      editPOS,
       getPOSs
     }
   }

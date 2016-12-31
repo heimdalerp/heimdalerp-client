@@ -17,7 +17,7 @@
           <td>{{ pointofsale.fantasy_name }}</td>
           <td>{{ type_string(pointofsale.point_of_sale_type) }}</td>
           <td><input type="checkbox" disabled="disabled" v-model="pointofsale.is_inactive"></td>
-          <td>{{ pointofsale.fiscal_address.street_address }}</td>
+          <td>{{ pointofsale.fiscal_address.street_address | default '-' }}</td>
         </tr>
         <tr v-if="POSs.length === 0">
           <td colspan="6">Sin resultados.</td>
