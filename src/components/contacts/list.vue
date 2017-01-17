@@ -9,12 +9,14 @@
         <th>Email</th>
       </thead>
       <tbody>
-        <tr v-for="contact in contacts" v-link="'/contacts/' + contact.id">
-          <td><input type="checkbox"></td>
-          <td>{{ contact.invoice_contact.contact_contact.name }}</td>
-          <td>{{ contact.invoice_contact.contact_contact.phone_numbers }}</td>
-          <td>{{ contact.invoice_contact.contact_contact.extra_emails }}</td>
-        </tr>
+        <!-- <tr v-for="contact in contacts"> -->
+          <router-link :to="'/contacts/' + contact.id" tag="tr" v-for="contact in contacts">
+            <td><input type="checkbox"></td>
+            <td>{{ contact.invoice_contact.contact_contact.name }}</td>
+            <td>{{ contact.invoice_contact.contact_contact.phone_numbers }}</td>
+            <td>{{ contact.invoice_contact.contact_contact.extra_emails }}</td>
+          </router-link>
+        <!-- </tr> -->
         <tr v-if="contacts.length === 0">
           <td colspan="4">Sin resultados.</td>
         </tr>
@@ -36,7 +38,7 @@ export default {
 
   methods: {
     create () {
-      this.$router.go('/contacts/new')
+      this.$router.push('/contacts/new')
     }
   },
 

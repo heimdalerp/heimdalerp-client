@@ -18,6 +18,7 @@
           </div>
         </div>
       </div>
+      <one-to-one-next :value="wew" @input="wew = event"></one-to-one-next>
     </div>
   </div>
 </template>
@@ -31,6 +32,7 @@ export default {
                   {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}],
         crumbs: ['Contactos', 'Preferencias']
       },
+      wew: 33,
       otoCountry: {
         name: 'País',
         options: [
@@ -43,6 +45,9 @@ export default {
     }
   },
   methods: {
+    fug (event) {
+      console.log(event)
+    },
     edit () {
       this.editing = true
     },

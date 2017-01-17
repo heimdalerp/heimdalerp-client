@@ -9,7 +9,7 @@
       <div class="col-xs-12">
         <div id="form-group">
           <label>Fecha</label>
-          <p v-show="!editing">{{ invoice.invoice_date }}</p>
+          <p v-if="!editing">{{ invoice.invoice_date }}</p>
           <div v-else class="input-group">
             <input type="text" class="calendar form-control" v-model="invoice.invoice_date" :disabled="!editing">
             <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
@@ -68,7 +68,7 @@
           <tbody v-if="editing">
             <tr v-for="line in invoice_lines">
               <td>
-                <input id="line-{{$index}}" type="text" class="form-control" :disabled="line._deleted || !editing" />
+                <input :id="'line-' + $index" type="text" class="form-control" :disabled="line._deleted || !editing" />
               </td>
               <td><textarea rows="1" v-model="line.description" class="form-control" :disabled="line._deleted || !editing"></textarea></td>
               <td><input size="3"  type="text" v-model="line.quantity" class="form-control" :disabled="line._deleted || !editing"></td>
@@ -207,7 +207,7 @@ export default {
       this.editing = true
     },
     discard () {
-      this.$router.go('/accounting/credits/')
+      this.$router.push('/accounting/credits/')
     },
     save () {
       var vm = this

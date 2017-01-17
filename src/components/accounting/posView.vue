@@ -76,20 +76,20 @@ export default {
       if (r) {
         if (this.$route.params.posId !== 'new') {
           this.editing = false
-          this.$router.go(this.$route.path)
+          this.$router.push(this.$route.path)
         } else {
-          this.$router.go('/accounting/pointsofsale/')
+          this.$router.push('/accounting/pointsofsale/')
         }
       }
     },
     save () {
       if (this.$route.params.posId === 'new') {
         this.addPOS(this.pos).then(response => {
-          this.$router.go('/accounting/pointsofsale/' + response.data.id + '/')
+          this.$router.push('/accounting/pointsofsale/' + response.data.id + '/')
         })
       } else {
         this.editPOS(this, this.pos).then(() => {
-          this.$router.go('/accounting/pointsofsale')
+          this.$router.push('/accounting/pointsofsale')
         })
       }
     },

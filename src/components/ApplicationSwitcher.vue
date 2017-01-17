@@ -1,11 +1,11 @@
 <template>
   <div id="ooe">
     <div class="apps">
-      <template v-for="module in modules | orderBy 'name'">
-        <a v-link="module.link" class="app">
+      <template v-for="module in modules">
+        <router-link :to="module.link" class="app">
           <img :src="'/static/' + module.icon + '.png'" />
           <div class="caption">{{module.name}}</div>
-        </a>
+        </router-link>
       </template>
     </div>
   </div>

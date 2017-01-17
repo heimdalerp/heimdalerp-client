@@ -9,21 +9,21 @@
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
           <label>Punto de venta</label>
-          <p v-show="!editing">{{ `000${invoice.point_of_sale_ar.afip_id}`.slice(-4) + ` - ${invoice.point_of_sale_ar.fantasy_name}`}}</p>
+          <p v-if="!editing">{{ `000${invoice.point_of_sale_ar.afip_id}`.slice(-4) + ` - ${invoice.point_of_sale_ar.fantasy_name}`}}</p>
           <select v-else class="form-control" v-model="pointofsale">
             <option v-for="pos in pointsofsale" :value="pos.url">{{ pos.fantasy_name }}</option>
           </select>
         </div>
         <div class="form-group" style="max-height: 59px">
           <label>Contacto</label>
-          <p v-show="!editing">{{ invoice.invoicear_contact.invoice_contact.legal_name }}</p>
+          <p v-if="!editing">{{ invoice.invoicear_contact.invoice_contact.legal_name }}</p>
           <span v-else><input id="contactInput" type="text" class="form-control"></span>
         </div>
         <div class="form-group">
           <label>Tipo</label>
-          <p v-show="!editing">{{ invoice.invoice_type.name }}</p>
+          <p v-if="!editing">{{ invoice.invoice_type.name }}</p>
           <select v-else class="form-control" v-model="invoice.invoice_type">
-            <option v-for="InvoiceType in invoiceTypes" value="{{ InvoiceType.url }}">{{ InvoiceType.name }}</option>
+            <option v-for="InvoiceType in invoiceTypes" :value="InvoiceType.url">{{ InvoiceType.name }}</option>
           </select>
         </div>
       </div>
@@ -44,7 +44,7 @@
         </div>
         <div class="form-group">
           <label>Concepto</label>
-          <p v-show="!editing">{{ invoice.concept_type.name }}</p>
+          <p v-if="!editing">{{ invoice.concept_type.name }}</p>
           <select v-else class="form-control" v-model="invoice.concept_type">
             <option v-bind:value="1">Productos</option>
             <option v-bind:value="2">Servicios</option>
@@ -57,7 +57,7 @@
         <div class="col-sm-6">
           <div v-show="invoice.concept_type > 1" class="form-group">
             <label>Desde</label>
-            <p v-show="!editing">{{ invoice.service_start }}</p>
+            <p v-if="!editing">{{ invoice.service_start }}</p>
             <div class="input-group" v-else>
               <input type="text" class="calendar form-control" v-model="invoice.service_start">
               <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
@@ -97,7 +97,7 @@
           <tbody v-if="editing">
             <tr v-for="line in invoice_lines">
               <td>
-                <input id="line-{{$index}}" type="text" class="form-control" :disabled="line._deleted || !editing" />
+                <input :id="'line-' + $index" type="text" class="form-control" :disabled="line._deleted || !editing" />
               </td>
               <td><textarea rows="1" v-model="line.description" class="form-control" :disabled="line._deleted || !editing"></textarea></td>
               <td><input size="3"  type="text" v-model="line.quantity" class="form-control" :disabled="line._deleted || !editing"></td>
@@ -251,13 +251,13 @@ export default {
       this.editing = true
     },
     discard () {
-      this.$router.go('/accounting/invoices/')
+      this.$router.push('/accounting/invoices/')
     },
     credit () {
-      this.$router.go(`/accounting/credits/new?invoice=${this.$route.params.invoiceId}`)
+      this.$router.push(`/accounting/credits/new?invoice=${this.$route.params.invoiceId}`)
     },
     debit () {
-      this.$router.go(`/accounting/debits/new?invoice=${this.$route.params.invoiceId}`)
+      this.$router.push(`/accounting/debits/new?invoice=${this.$route.params.invoiceId}`)
     },
     save () {
       let invoice = {
@@ -284,7 +284,7 @@ export default {
       if (this.$route.params.invoiceId === 'new') {
         this.addInvoice(invoice).then(function (response) {
           console.log(response)
-          this.$router.go(`/accounting/invoices/${response.data.id}/`)
+          this.$router.push(`/accounting/invoices/${response.data.id}/`)
         })
       }
     },

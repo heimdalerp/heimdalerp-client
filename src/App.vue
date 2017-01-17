@@ -10,9 +10,9 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a v-if="$route.path === '/' && hasPrevious" class="navbar-brand glyphicon glyphicon-chevron-left" @click="goBack()" ></a>
-          <a v-if="$route.path !== '/'" class="navbar-brand glyphicon glyphicon-home" v-link="'/'"></a>
-          <a v-if="$route.path !== '/'" class="navbar-brand">{{currentApp}}</a>
+          <span v-if="$route.path === '/' && hasPrevious" class="navbar-brand glyphicon glyphicon-chevron-left" @click="goBack()" ></span>
+          <router-link v-if="$route.path !== '/'" class="navbar-brand glyphicon glyphicon-home" to="'/'"></router-link>
+          <span v-if="$route.path !== '/'" class="navbar-brand">{{currentApp}}</span>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -20,11 +20,11 @@
           <ul v-if="$route.path !== '/'"  class="nav navbar-nav">
             <li v-for="subMenuElement in subMenuElements" v-bind:class="{'dropdown': subMenuElement.subElements}">
               <!-- It's a flat submenu -->
-              <a v-if="!subMenuElement.subElements" v-link="subMenuElement.link">{{subMenuElement.name}}</a>
+              <router-link v-if="!subMenuElement.subElements" to="subMenuElement.link">{{subMenuElement.name}}</router-link>
               <!-- It's a dropdown submenu -->
               <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{subMenuElement.name}} <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li v-for="subSubMenuElement in subMenuElement.subElements"><a v-link="subSubMenuElement.link">{{subSubMenuElement.name}}</a></li>
+                <li v-for="subSubMenuElement in subMenuElement.subElements"><router-link to="subSubMenuElement.link">{{subSubMenuElement.name}}</router-link></li>
               </ul>
             </li>
           </ul>
@@ -80,6 +80,7 @@
 <script>
 import auth from './auth/index.js'
 import store from './vuex/store'
+import { eventHub } from './main'
 
 export default {
   store,
@@ -94,19 +95,16 @@ export default {
       loadingQueue: 0
     }
   },
+  created () {
+    eventHub.$on('showError', this.showError)
+    eventHub.$on('loading', this.loading)
+    eventHub.$on('doneLoading', this.doneLoading)
+  },
   methods: {
     logout () {
       auth.logout()
-      this.$router.go('login')
-    }
-  },
-  events: {
-    /**
-    * showError(msg) receives the error message
-    * and displays the error box
-    *
-    * @param {String} msg
-    */
+      this.$router.push('login')
+    },
     showError (msg) {
       this.errorModal.errorMsg = msg
       jQuery('#errorModal').modal('show') //eslint-disable-line

@@ -17,8 +17,9 @@ export default {
       this.user.authenticated = true
       this.user.username = creds.username
 
-      vuecontext.$router.go('/')
+      vuecontext.$router.push('/')
     }, function (response) {
+      console.log('A')
       switch (response.status) {
         case 0:
           vuecontext.errors.other = 'No se pudo contactar al servidor'
@@ -30,8 +31,8 @@ export default {
           vuecontext.errors.other = 'Error desconocido'
       }
       let errors = response.data
-      Vue.set(vuecontext.errors, 'username', errors.username)
-      Vue.set(vuecontext.errors, 'password', errors.password)
+      Vue.set(vuecontext, 'errors', errors)
+      response.handled = true
     })
   },
 

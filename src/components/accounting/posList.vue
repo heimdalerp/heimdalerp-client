@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     create () {
-      this.$router.go('/accounting/pointsofsale/new')
+      this.$router.push('/accounting/pointsofsale/new')
     },
     type_string (type) {
       switch (type) {

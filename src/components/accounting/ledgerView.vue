@@ -7,7 +7,7 @@
         <tr><th>Fecha</th><th>Descripción</th><th>Debe</th><th>Haber</th></tr>
       </thead>
       <tbody>
-        <tr v-for="line in lines | orderBy 'date' -1">
+        <tr v-for="line in lines">
           <td>{{ line.date }}</td>
           <td>{{ line.description }}</td>
           <td><span v-if="line.type === 'D'">${{ line.amount }}</span></td>

@@ -43,7 +43,7 @@ export default {
 
   methods: {
     create: function () {
-      this.$router.go('/accounting/invoices/new')
+      this.$router.push('/accounting/invoices/new')
     },
     status_string (status) {
       switch (status) {

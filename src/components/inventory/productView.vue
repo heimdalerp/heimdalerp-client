@@ -64,9 +64,9 @@ export default {
       if (r) {
         if (this.$route.params.productId !== 'new') {
           this.editing = false
-          this.$router.go(this.$route.path)
+          this.$router.push(this.$route.path)
         } else {
-          this.$router.go('/inventory/')
+          this.$router.push('/inventory/')
         }
       }
     },
@@ -88,11 +88,11 @@ export default {
 
       if (this.$route.params.contactId === 'new') {
         this.addProduct(this, this.product).then(response => {
-          this.$router.go('products/' + response.data.id + '/')
+          this.$router.push('products/' + response.data.id + '/')
         })
       } else {
         this.editProduct(this, this.product).then(response => {
-          this.$router.go('/inventory')
+          this.$router.push('/inventory')
         })
       }
     }

@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 import { addPayment } from '../../vuex/actions'
 
 export default {
@@ -111,6 +112,7 @@ export default {
       }
     }
   },
+
   data () {
     return {
       bb_crumbs: ['Contabilidad', 'Pagos', 'Ingresar'],
@@ -119,16 +121,17 @@ export default {
       payment: {}
     }
   },
+
   methods: {
     discard () {
-      this.$router.go('/accounting/billing/')
+      this.$router.push('/accounting/billing/')
     },
     save () {
       this.payment.contact_contact = window.jQuery('#contactInput').val()
       this.payment.accounting_company = 'http://localhost:8000/api/accounting/companies/1/'
 
       this.addPayment(this.payment).then(function (response) {
-        this.$router.go('/accounting/billing/')
+        this.$router.push('/accounting/billing/')
       })
     }
   },
@@ -151,76 +154,78 @@ export default {
     }
   },
 
-  ready () {
-    var p
-    var $ = window.jQuery
-    var elt = $('#contactInput')
-    var engine
+  mounted () {
+    Vue.nextTick(function () {
+      var p
+      var $ = window.jQuery
+      var elt = $('#contactInput')
+      var engine
 
-    if (this.$route.params.paymentId === 'new') {
-      p = this.$http.get('contact/contacts/')
-      p.then(function (response) {
-        engine = new window.Bloodhound({
-          datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
-          queryTokenizer: window.Bloodhound.tokenizers.whitespace,
-          local: response.data.results
+      if (this.$route.params.paymentId === 'new') {
+        p = this.$http.get('contact/contacts/')
+        p.then(function (response) {
+          engine = new window.Bloodhound({
+            datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
+            queryTokenizer: window.Bloodhound.tokenizers.whitespace,
+            local: response.data.results
+          })
+          engine.initialize()
+
+          elt.tagsinput({
+            maxTags: 1,
+            itemValue: 'url',
+            itemText: 'name',
+            typeaheadjs: {
+              name: 'engine',
+              displayKey: 'name',
+              source: engine.ttAdapter()
+            }
+          })
         })
-        engine.initialize()
 
-        elt.tagsinput({
-          maxTags: 1,
-          itemValue: 'url',
-          itemText: 'name',
-          typeaheadjs: {
-            name: 'engine',
-            displayKey: 'name',
-            source: engine.ttAdapter()
-          }
+        $('#demo').daterangepicker({
+          'singleDatePicker': true,
+          'locale': {
+            'format': 'YYYY-MM-DD',
+            'separator': ' - ',
+            'applyLabel': 'Apply',
+            'cancelLabel': 'Cancel',
+            'fromLabel': 'From',
+            'toLabel': 'To',
+            'customRangeLabel': 'Custom',
+            'weekLabel': 'W',
+            'daysOfWeek': [
+              'Do',
+              'Lu',
+              'Ma',
+              'Mi',
+              'Ju',
+              'Vi',
+              'Sa'
+            ],
+            'monthNames': [
+              'Enero',
+              'Febrero',
+              'Marzo',
+              'Abril',
+              'Mayo',
+              'Junio',
+              'Julio',
+              'Agosto',
+              'Septiembre',
+              'Octubre',
+              'Noviembre',
+              'Diciembre'
+            ],
+            'firstDay': 1
+          },
+          'startDate': (function () {
+            let today = new Date()
+            return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+          })()
         })
-      })
-
-      $('#demo').daterangepicker({
-        'singleDatePicker': true,
-        'locale': {
-          'format': 'YYYY-MM-DD',
-          'separator': ' - ',
-          'applyLabel': 'Apply',
-          'cancelLabel': 'Cancel',
-          'fromLabel': 'From',
-          'toLabel': 'To',
-          'customRangeLabel': 'Custom',
-          'weekLabel': 'W',
-          'daysOfWeek': [
-            'Do',
-            'Lu',
-            'Ma',
-            'Mi',
-            'Ju',
-            'Vi',
-            'Sa'
-          ],
-          'monthNames': [
-            'Enero',
-            'Febrero',
-            'Marzo',
-            'Abril',
-            'Mayo',
-            'Junio',
-            'Julio',
-            'Agosto',
-            'Septiembre',
-            'Octubre',
-            'Noviembre',
-            'Diciembre'
-          ],
-          'firstDay': 1
-        },
-        'startDate': (function () {
-          let today = new Date()
-          return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
-        })()
-      })
-    }
+      }
+    })
   },
   vuex: {
     getters: {

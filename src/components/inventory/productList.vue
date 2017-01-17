@@ -36,7 +36,7 @@ export default {
 
   methods: {
     create () {
-      this.$router.go('/inventory/products/new')
+      this.$router.push('/inventory/products/new')
     }
   },
 

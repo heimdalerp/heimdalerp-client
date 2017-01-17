@@ -31,9 +31,6 @@
 import { getPayments } from 'src/vuex/actions'
 
 export default {
-  components: {
-    ButtonBar: require('../../utils/components/ButtonBar.vue')
-  },
   data () {
     return {
       bb_crumbs: ['Contabilidad', 'Pagos'],
@@ -42,7 +39,7 @@ export default {
   },
   methods: {
     create () {
-      this.$router.go('/accounting/billing/new')
+      this.$router.push('/accounting/billing/new')
     },
     type_string (type) {
       switch (type) {
@@ -77,30 +74,7 @@ export default {
       }
     }
   },
-  ready () {
-    /* var p1 = this.$http.get('accounting/payments/')
 
-    p1.then(
-      function (response) {
-        this.payments = response.json().results.reverse()
-      },
-      function (error) {
-        this.$dispatch('showError', error.statusText)
-      })
-
-    p1.then(
-      function (response) {
-        for (let payment of this.payments) {
-          // Fetch the contact's name
-          var p2 = this.$http.get(payment.contact_contact)
-
-          p2.then(function (response) {
-            payment.contact_contact = response.data.name
-          })
-        }
-      }
-    )*/
-  },
   created () {
     this.getPayments()
   },

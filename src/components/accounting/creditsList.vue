@@ -33,8 +33,6 @@
 <script>
 import { getInvoices } from '../../vuex/actions'
 
-const INVOICE_TYPE_CREDIT_ID = '2'
-
 export default {
   data: function () {
     return {
@@ -55,8 +53,8 @@ export default {
     }
   },
 
-  compiled () {
-    this.getInvoices(INVOICE_TYPE_CREDIT_ID)
+  created () {
+    this.getInvoices()
   },
 
   vuex: {

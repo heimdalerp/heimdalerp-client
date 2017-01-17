@@ -151,9 +151,9 @@ export default {
       if (r) {
         if (this.$route.params.contactId !== 'new') {
           this.editing = false
-          this.$router.go(this.$route.path)
+          this.$router.push(this.$route.path)
         } else {
-          this.$router.go('/contacts/')
+          this.$router.push('/contacts/')
         }
       }
     },
@@ -182,11 +182,11 @@ export default {
 
       if (this.$route.params.contactId === 'new') {
         this.addContact(this, this.invoice_ar_contact).then(response => {
-          this.$router.go('/contacts/' + response.data.id + '/')
+          this.$router.push('/contacts/' + response.data.id + '/')
         })
       } else {
         this.editContact(this.invoice_ar_contact).then(response => {
-          this.$router.go('/contacts')
+          this.$router.push('/contacts')
         })
       }
     },

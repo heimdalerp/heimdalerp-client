@@ -1,7 +1,7 @@
 <template>
   <div id="buttonbar" class="container-fluid">
     <ol class="breadcrumb">
-      <li v-for="crumb in crumbs" v-bind:class="{'active': $index == crumbs.length-1}">{{crumb | capitalize}}</li>
+      <li v-for="crumb in crumbs" v-bind:class="{'active': $index == crumbs.length-1}">{{ crumb }}</li>
     </ol>
 
     <button v-for="button in buttons" @click="clicked(button.method)"
