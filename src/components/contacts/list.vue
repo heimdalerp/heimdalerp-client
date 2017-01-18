@@ -9,14 +9,12 @@
         <th>Email</th>
       </thead>
       <tbody>
-        <!-- <tr v-for="contact in contacts"> -->
-          <router-link :to="'/contacts/' + contact.id" tag="tr" v-for="contact in contacts">
-            <td><input type="checkbox"></td>
-            <td>{{ contact.invoice_contact.contact_contact.name }}</td>
-            <td>{{ contact.invoice_contact.contact_contact.phone_numbers }}</td>
-            <td>{{ contact.invoice_contact.contact_contact.extra_emails }}</td>
-          </router-link>
-        <!-- </tr> -->
+        <router-link :to="'/contacts/' + contact.id" tag="tr" v-for="contact in contacts">
+          <td><input type="checkbox"></td>
+          <td>{{ contact.invoice_contact.contact_contact.name }}</td>
+          <td>{{ contact.invoice_contact.contact_contact.phone_numbers }}</td>
+          <td>{{ contact.invoice_contact.contact_contact.extra_emails }}</td>
+        </router-link>
         <tr v-if="contacts.length === 0">
           <td colspan="4">Sin resultados.</td>
         </tr>

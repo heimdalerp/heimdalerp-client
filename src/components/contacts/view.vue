@@ -28,8 +28,8 @@
         <div class="col-sm-6 col-xs-12">
           <div class="col-xs-12">
             <div class="form-group">
-              <one-to-one v-if="editing" :name="otofiscal.name" :options="otofiscal.options" :model.sync="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
-              <p v-if="!editing">{{ pf(invoice_ar_contact.invoice_contact.fiscal_position) }}</p>
+              <one-to-one v-if="editing" name="Posición fiscal" display="name" :options="fiscalpositions" v-model="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
+              <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_position.name }}</p>
             </div>
           </div>
         </div>
@@ -38,9 +38,9 @@
         <div class="col-sm-6 col-xs-12">
           <div class="col-xs-5">
             <div v-if="editing" class="form-group">
-              <one-to-one :name="otoidtype.name" :options="otoidtype.options" :model.sync="invoice_ar_contact.id_type"></one-to-one>
+              <one-to-one name="Identificación" display="name" :options="idtypes" v-model="invoice_ar_contact.id_type"></one-to-one>
             </div>
-            <p v-if="!editing">{{ df(invoice_ar_contact.id_type) }}</p>
+            <p v-if="!editing">{{ invoice_ar_contact.id_type.name }}</p>
           </div>
 
           <div class="col-xs-7">
@@ -63,14 +63,14 @@
           <div class="col-xs-12">
             <div class="form-group">
               <label for="fiscal_phone">Teléfonos</label>
-              <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.phone_numbers | default '-'}}</p>
+              <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.phone_numbers | default('-')}}</p>
               <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.contact_contact.phone_numbers"/>
             </div>
           </div>
           <div class="col-xs-12">
             <div class="form-group">
               <label for="fiscal_phone">Direcciones de correo</label>
-              <p v-if="!editing">{{invoice_ar_contact.invoice_contact.contact_contact.extra_emails | default '-'}}</p>
+              <p v-if="!editing">{{invoice_ar_contact.invoice_contact.contact_contact.extra_emails | default('-')}}</p>
               <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.contact_contact.extra_emails"/>
             </div>
           </div>
@@ -93,8 +93,7 @@ export default {
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}],
       bb_crumbs: ['Contactos'],
-      otofiscal: {name: 'Posición fiscal', options: []},
-      otoidtype: {name: 'Identificación', options: [{id: 'D', name: 'DNI'}, {id: 'T', name: 'CUIT'}, {id: 'L', name: 'CUIL'}]},
+      idtypes: [{id: 'D', name: 'DNI'}, {id: 'T', name: 'CUIT'}, {id: 'L', name: 'CUIL'}],
       editing: false,
       invoice_ar_contact: {}
     }
@@ -110,38 +109,6 @@ export default {
   },
 
   methods: {
-    pf (val) {
-      if (val === null) {
-        return 'ERR'
-      }
-
-      val = parseInt(val.substring(val.length - 2, val.length - 1))
-
-      if (val === 2) {
-        return 'IVA Responsable Inscripto'
-      } else if (val === 1) {
-        return 'IVA Exento'
-      } else if (val === 3) {
-        return 'Consumidor Final'
-      }
-
-      return 'ERR'
-    },
-    df (val) {
-      if (val === null) {
-        return '---'
-      }
-
-      if (val === 'D') {
-        return 'DNI'
-      } else if (val === 'T') {
-        return 'CUIT'
-      } else if (val === 'L') {
-        return 'CUIL'
-      }
-
-      return 'ERR'
-    },
     edit () {
       this.editing = true
     },
@@ -175,6 +142,9 @@ export default {
         return false
       }
 
+      this.invoice_ar_contact.id_type = this.invoice_ar_contact.id_type.id
+      this.invoice_ar_contact.invoice_contact.fiscal_position =
+        this.invoice_ar_contact.invoice_contact.fiscal_position.url
       this.invoice_ar_contact.invoice_contact.legal_name =
         this.invoice_ar_contact.invoice_contact.contact_contact.name
       this.invoice_ar_contact.invoice_contact.contact_contact.home_address =
@@ -202,10 +172,10 @@ export default {
     var vm = this
 
     this.invoice_ar_contact = {
+      id_type: {},
       invoice_contact: {
-        fiscal_position: null,
-        fiscal_address: {
-        },
+        fiscal_position: {},
+        fiscal_address: {},
         contact_contact: {
           contact_type: 'C',
           extra_emails: '',
@@ -216,18 +186,22 @@ export default {
       }
     }
 
-    this.getContacts().then(function (response) {
+    let cp = this.getContacts().then(function (response) {
       if (vm.$route.params.contactId === 'new') {
         vm.editing = true
         vm.bb_crumbs.push('Crear nuevo contacto')
       } else {
         vm.invoice_ar_contact = JSON.parse(JSON.stringify(vm.contact))
+        vm.invoice_ar_contact.id_type = vm.idtypes.find(t => t.id === vm.invoice_ar_contact.id_type)
         vm.bb_crumbs.push(vm.invoice_ar_contact.invoice_contact.contact_contact.name)
       }
     })
 
-    this.getFiscalPositions().then(function (response) {
-      vm.otofiscal.options.push(...vm.fiscalpositions)
+    let fpp = this.getFiscalPositions()
+
+    Promise.all([cp, fpp]).then(function () {
+      vm.invoice_ar_contact.invoice_contact.fiscal_position =
+        vm.fiscalpositions.find(fp => fp.url === vm.invoice_ar_contact.invoice_contact.fiscal_position)
     })
   },
 
@@ -235,7 +209,6 @@ export default {
     getters: {
       contacts: state => state.contacts.all,
       fiscalpositions: state => state.accounting.fiscalPositions.all
-        .map(function (c) { return { id: c.url, name: c.name } })
     },
     actions: {
       addContact,

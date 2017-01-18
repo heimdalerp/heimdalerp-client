@@ -21,7 +21,6 @@ Vue.http.interceptors.push(function (request, next) {
   }
 
   next((response) => {
-    console.log('B')
     eventHub.$emit('doneLoading')
     if (response.status === 401) {
       auth.logout()
@@ -48,8 +47,8 @@ export const router = new VueRouter({
     { path: '/contacts', component: require('components/contacts/main'),
       children: [
         { path: '', component: require('components/contacts/list') },
-        { path: ':contactId', component: require('components/contacts/view') },
-        { path: 'prefs', component: require('components/contacts/prefs') }
+        { path: 'prefs', component: require('components/contacts/prefs') },
+        { path: ':contactId', component: require('components/contacts/view') }
       ]
     },
     //   '/contacts/': {

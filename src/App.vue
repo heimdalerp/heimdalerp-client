@@ -20,7 +20,7 @@
           <ul v-if="$route.path !== '/'"  class="nav navbar-nav">
             <li v-for="subMenuElement in subMenuElements" v-bind:class="{'dropdown': subMenuElement.subElements}">
               <!-- It's a flat submenu -->
-              <router-link v-if="!subMenuElement.subElements" to="subMenuElement.link">{{subMenuElement.name}}</router-link>
+              <router-link v-if="!subMenuElement.subElements" :to="subMenuElement.link">{{subMenuElement.name}}</router-link>
               <!-- It's a dropdown submenu -->
               <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{subMenuElement.name}} <span class="caret"></span></a>
               <ul class="dropdown-menu">
