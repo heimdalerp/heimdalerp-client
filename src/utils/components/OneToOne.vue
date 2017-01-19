@@ -1,9 +1,11 @@
 <template>
 <div>
-  <label :for="id">{{ name }}</label>
-  <select :id="id" class="form-control" v-model="selected">
-    <option v-for="option in options" :value="option">{{ option[display] }}</option>
-  </select>
+  <label>{{ name }}
+    <select class="form-control" v-model="selected">
+      <option v-for="option in options" :value="option">{{ option[display] }}</option>
+    </select>
+  </label>
+
 </div>
 </template>
 <script>
@@ -18,9 +20,6 @@ export default {
         this.$emit('input', value)
       }
     }
-  },
-  created: function () {
-    this.id = Math.floor((Math.random() * 10000) + 1)
   }
 }
 </script>
