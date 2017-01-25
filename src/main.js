@@ -179,22 +179,20 @@ router.beforeEach((to, from, next) => {
 // Set up the error notification hub
 export var eventHub = new Vue()
 
-// Load filters
-Vue.filter('default', function (value, _default) {
-  return value || _default
-})
-
 // Load ulil components
-Vue.component('Address', require('src/utils/components/Address.vue'))
+Vue.component('HomeAddress', require('src/utils/components/HomeAddress.vue'))
 Vue.component('ButtonBar', require('src/utils/components/ButtonBar.vue'))
 Vue.component('Locality', require('src/utils/components/Locality.vue'))
 Vue.component('OneToOne', require('src/utils/components/OneToOne.vue'))
-Vue.component('OneToOneNext', require('src/utils/components/OneToOneNext.vue'))
 
 // Showtime
 // window.addEventListener('load', function () {
 //   router.start(App, 'app')
 // })
+
+Vue.filter('default', function (value, _default) {
+  return value || _default
+})
 
 new Vue({ // eslint-disable-line no-new
   el: 'app',

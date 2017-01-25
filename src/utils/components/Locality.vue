@@ -27,15 +27,24 @@
 </template>
 <script>
 export default {
-  props: ['editing', 'url'],
+  props: ['editing', 'value'],
   data () {
     return {
       countries: [],
       regions: [],
       localities: [],
       country: {},
-      region: {},
-      locality: {}
+      region: {}
+    }
+  },
+  computed: {
+    locality: {
+      get () {
+        return this.value || {}
+      },
+      set (value) {
+        this.$emit('input', value)
+      }
     }
   },
   created: function () {
@@ -44,36 +53,31 @@ export default {
     })
   },
   watch: {
+    // When the country changes, show its regions
     country (country) {
       this.$http.get(country.regions).then((response) => {
         this.regions = response.data.results
       })
     },
+    // When the region changes, show its localities
     region (region) {
       this.$http.get(region.localities).then((response) => {
         this.localities = response.data.results
       })
     },
-    locality (locality) {
-      this.$emit('update', locality.url)
-    },
-    url (url) {
-      // Get this locality
-      if (url) {
-        this.$http.get(url).then((response) => {
-          this.locality = response.data
-          // Get its region
-          this.$http.get(this.locality.region).then((response) => {
-            this.region = response.data
-            this.country = this.countries.find((c) => c.url === this.region.country)
-            // Get the regions for this country
-            this.$http.get(this.country.regions).then((response) => {
-              this.regions = response.data.regions
-            })
-            // And the localities for that region
-            this.$http.get(this.region.localities).then((response) => {
-              this.localities = response.data.localities
-            })
+    value (value) {
+      // When the parent gives us a locality, get its region and country
+      if (typeof value === 'object') {
+        this.$http.get(value.region).then((response) => {
+          this.region = response.data
+          this.country = this.countries.find((c) => c.url === this.region.country)
+          // Get the regions for this country
+          this.$http.get(this.country.regions).then((response) => {
+            this.regions = response.data.regions
+          })
+          // And the localities for that region
+          this.$http.get(this.region.localities).then((response) => {
+            this.localities = response.data.localities
           })
         })
       }

@@ -54,8 +54,8 @@
 
         <!-- Left column -->
         <div class="col-sm-6 col-xs-12">
-          <address :editing="editing" v-on:update="updateAddress" :value="invoice_ar_contact.invoice_contact.fiscal_address"></address>
-          <locality :editing="editing" v-on:update="updateLocality" :url="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
+          <home-address :editing="editing" :value="invoice_ar_contact.invoice_contact.fiscal_address"></home-address>
+          <locality :editing="editing" v-model="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
         </div>
 
         <!-- Right column -->
@@ -87,6 +87,7 @@ import auth from '../../auth/index.js'
 import { addContact, editContact, getContacts, getFiscalPositions } from '../../vuex/actions'
 
 export default {
+  name: 'ContactView',
   data () {
     return {
       bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
@@ -150,21 +151,22 @@ export default {
       this.invoice_ar_contact.invoice_contact.contact_contact.home_address =
         this.invoice_ar_contact.invoice_contact.fiscal_address
 
+      let invoice = this.invoice_ar_contact
+      invoice.invoice_contact.fiscal_address.locality =
+        invoice.invoice_contact.fiscal_address.locality.url
+
       if (this.$route.params.contactId === 'new') {
-        this.addContact(this, this.invoice_ar_contact).then(response => {
+        this.addContact(this, invoice).then(response => {
           this.$router.push('/contacts/' + response.data.id + '/')
         })
       } else {
-        this.editContact(this.invoice_ar_contact).then(response => {
+        this.editContact(invoice).then(response => {
           this.$router.push('/contacts')
         })
       }
     },
     updateAddress (address) {
       this.invoice_ar_contact.invoice_contact.fiscal_address = address
-    },
-    updateLocality (url) {
-      this.invoice_ar_contact.invoice_contact.fiscal_address.locality = url
     }
   },
 
@@ -175,7 +177,9 @@ export default {
       id_type: {},
       invoice_contact: {
         fiscal_position: {},
-        fiscal_address: {},
+        fiscal_address: {
+          locality: {}
+        },
         contact_contact: {
           contact_type: 'C',
           extra_emails: '',
@@ -186,7 +190,7 @@ export default {
       }
     }
 
-    let cp = this.getContacts().then(function (response) {
+    let contactLoaded = this.getContacts().then(function (response) {
       if (vm.$route.params.contactId === 'new') {
         vm.editing = true
         vm.bb_crumbs.push('Crear nuevo contacto')
@@ -197,9 +201,15 @@ export default {
       }
     })
 
-    let fpp = this.getFiscalPositions()
+    let fiscalPositionsLoaded = this.getFiscalPositions()
 
-    Promise.all([cp, fpp]).then(function () {
+    contactLoaded.then(function () {
+      vm.$http.get(vm.invoice_ar_contact.invoice_contact.fiscal_address.locality).then(function (response) {
+        vm.invoice_ar_contact.invoice_contact.fiscal_address.locality = response.data
+      })
+    })
+
+    Promise.all([contactLoaded, fiscalPositionsLoaded]).then(function () {
       vm.invoice_ar_contact.invoice_contact.fiscal_position =
         vm.fiscalpositions.find(fp => fp.url === vm.invoice_ar_contact.invoice_contact.fiscal_position)
     })

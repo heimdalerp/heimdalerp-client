@@ -281,4 +281,9 @@ table {
   outline: 0;
   background-color: #428bca;
 }
+
+/* Fix Boostrap bolding inputs inside labels */
+/*label input {
+    font-weight:normal
+}*/
 </style>
