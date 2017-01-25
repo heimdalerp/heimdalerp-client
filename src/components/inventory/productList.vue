@@ -9,12 +9,12 @@
         <th>IVA</th>
       </thead>
       <tbody>
-        <tr v-for="product in products" v-link="'inventory/products/' + product.id">
+        <router-link :to="'inventory/products/' + product.id" tag="tr" v-for="product in products">
           <td><input type="checkbox"></td>
           <td>{{ product.name }}</td>
           <td>{{ product.current_price }}</td>
           <td>{{ product.vat.name }}</td>
-        </tr>
+        </router-link>
         <tr v-if="products.length === 0">
           <td colspan="4">Sin resultados.</td>
         </tr>

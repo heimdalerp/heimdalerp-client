@@ -51,20 +51,15 @@ export const router = new VueRouter({
         { path: ':contactId', component: require('components/contacts/view') }
       ]
     },
-    //   '/contacts/': {
-    //     component: require('components/contacts/main'),
-    //     subRoutes: {
-    //       '/': {
-    //         component: require('components/contacts/list')
-    //       },
-    //       '/:contactId/': {
-    //         component: require('components/contacts/view')
-    //       },
-    //       '/prefs/': {
-    //         component: require('components/contacts/prefs')
-    //       }
-    //     }
-    //   },
+
+    // Inventory module
+    { path: '/inventory', component: require('components/inventory/main'),
+      children: [
+        { path: '', component: require('components/inventory/productList') },
+        { path: 'products/:productId', component: require('components/inventory/productView') }
+      ]
+    },
+
     // System routes
     { path: '/', component: require('components/ApplicationSwitcher') },
     { path: '/login', component: require('components/Login') },
@@ -72,14 +67,6 @@ export const router = new VueRouter({
   ]
 })
 
-// router.map({
-//   '/login/': {
-//     component: require('components/Login')
-//   },
-//   '/': {
-//     component: require('components/ApplicationSwitcher')
-//   },
-//
 //   '/accounting/': {
 //     component: require('components/accounting/main'),
 //     subRoutes: {
@@ -118,38 +105,6 @@ export const router = new VueRouter({
 //       }
 //     }
 //   },
-//
-//   '/contacts/': {
-//     component: require('components/contacts/main'),
-//     subRoutes: {
-//       '/': {
-//         component: require('components/contacts/list')
-//       },
-//       '/:contactId/': {
-//         component: require('components/contacts/view')
-//       },
-//       '/prefs/': {
-//         component: require('components/contacts/prefs')
-//       }
-//     }
-//   },
-//
-//   'inventory': {
-//     component: require('components/inventory/main'),
-//     subRoutes: {
-//       '/': {
-//         component: require('components/inventory/productList')
-//       },
-//       '/products/:productId': {
-//         component: require('components/inventory/productView')
-//       }
-//     }
-//   }
-// })
-
-// router.redirect({
-//   '*': '/'
-// })
 
 // Check if we're still authenticated
 router.beforeEach((to, from, next) => {

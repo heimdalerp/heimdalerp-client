@@ -18,7 +18,7 @@
           </div>
 
           <div class="form-group">
-            <one-to-one v-if="editing" key="url" :name="otovats.name" :options="otovats.options" :model.sync="product.vat"></one-to-one>
+            <one-to-one v-if="editing" display="name" name="IVA" :options="vats" v-model="product.vat"></one-to-one>
             <label v-if="!editing">IVA</label>
             <p v-if="!editing">{{ product.vat.name }}</p>
           </div>
@@ -41,21 +41,13 @@ export default {
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'}],
       bb_crumbs: ['Productos'],
-      otovats: {name: 'IVA', options: []},
       editing: false,
       product: {}
     }
   },
 
-  computed: {
-    dbproduct () {
-      return this.products.find(p => p.id === parseInt(this.$route.params.productId))
-    }
-  },
-
   methods: {
     edit () {
-      this.product.vat = this.product.vat.url
       this.editing = true
     },
     discard () {
@@ -86,12 +78,15 @@ export default {
 
       this.product.company = auth.user.company
 
+      let product = JSON.parse(JSON.stringify(this.product))
+      product.vat = this.product.vat.url
+
       if (this.$route.params.contactId === 'new') {
-        this.addProduct(this, this.product).then(response => {
+        this.addProduct(this, product).then(response => {
           this.$router.push('products/' + response.data.id + '/')
         })
       } else {
-        this.editProduct(this, this.product).then(response => {
+        this.editProduct(this, product).then(response => {
           this.$router.push('/inventory')
         })
       }
@@ -105,18 +100,19 @@ export default {
       vat: {}
     }
 
-    this.getProducts(vm).then(function (response) {
-      if (vm.$route.params.productId === 'new') {
-        vm.editing = true
-        vm.bb_crumbs.push('Crear nuevo producto')
-      } else {
-        vm.product = Object.assign({}, vm.dbproduct)
-        vm.bb_crumbs.push(vm.product.name)
-      }
-    })
+    let vatsLoaded = this.getVATs(vm)
 
-    this.getVATs(vm).then(function (response) {
-      vm.otovats.options.push(...this.vats)
+    vatsLoaded.then(function () {
+      this.getProducts(vm).then(function (response) {
+        if (vm.$route.params.productId === 'new') {
+          vm.editing = true
+          vm.bb_crumbs.push('Crear nuevo producto')
+        } else {
+          vm.product = Object.assign({}, vm.products.find(p => p.id === parseInt(vm.$route.params.productId)))
+          vm.bb_crumbs.push(vm.product.name)
+          vm.product.vat = vm.vats.find(v => v.id === vm.product.vat.id)
+        }
+      })
     })
   },
 
