@@ -27,6 +27,7 @@
 import { getContacts, deleteContact } from 'src/vuex/actions'
 
 export default {
+  name: 'List',
   data () {
     return {
       bb_crumbs: ['Contactos'],

@@ -7,6 +7,7 @@ export default {
     authenticated: false,
     username: '',
     company: 'http://localhost:8000/api/persons/companies/1/',
+    company_in: 'http://localhost:8000/api/invoice/companies/1/',
     company_ar: 'http://localhost:8000/api/invoice_ar/companies/1/'
   },
 

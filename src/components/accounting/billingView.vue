@@ -5,7 +5,10 @@
       <div class="col-sm-6 col-xs-12">
         <div class="form-group" style="max-height: 59px">
           <label>Contacto</label>
-          <input v-if="editing" id='contactInput' type='text' class='form-control' />
+          <span v-if="editing">
+            <input id='contactInput' type='text' class='form-control' />
+            <contact-view-quick></contact-view-quick>
+          </span>
           <p v-else>{{ payment.contact_contact }}</p>
         </div>
         <div class="form-group">
@@ -13,7 +16,6 @@
           <select v-if="editing" class="form-control" v-model="payment.payment_type">
             <option v-bind:value="'S'">Enviar</option>
             <option v-bind:value="'R'">Recibir</option>
-            <option v-bind:value="'I'">Interno</option>
           </select>
           <p v-else>{{ payment_type_human }}</p>
         </div>
@@ -55,7 +57,7 @@
       <div class="col-sm-12">
         <label>Descripción</label>
         <textarea v-if="editing" v-model="payment.description"></textarea>
-        <p v-else>{{ payment.description | default '-' }}</p>
+        <p v-else>{{ payment.description | default('-') }}</p>
       </div>
 
     </div>
@@ -67,8 +69,10 @@ import Vue from 'vue'
 import { addPayment } from '../../vuex/actions'
 
 export default {
+  name: 'BillingView',
   components: {
-    ButtonBar: require('../../utils/components/ButtonBar.vue')
+    ButtonBar: require('../../utils/components/ButtonBar.vue'),
+    contactViewQuick: require('../contacts/viewQuick')
   },
   computed: {
     store_payment () {
@@ -155,14 +159,15 @@ export default {
   },
 
   mounted () {
+    let vm = this
     Vue.nextTick(function () {
       var p
       var $ = window.jQuery
       var elt = $('#contactInput')
       var engine
 
-      if (this.$route.params.paymentId === 'new') {
-        p = this.$http.get('contact/contacts/')
+      if (vm.$route.params.paymentId === 'new') {
+        p = vm.$http.get('contact/contacts/')
         p.then(function (response) {
           engine = new window.Bloodhound({
             datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
@@ -224,6 +229,9 @@ export default {
             return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
           })()
         })
+
+        let today = new Date()
+        vm.payment.payment_date = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
       }
     })
   },

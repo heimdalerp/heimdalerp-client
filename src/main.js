@@ -43,6 +43,26 @@ Vue.http.interceptors.push(function (request, next) {
 Vue.use(VueRouter)
 export const router = new VueRouter({
   routes: [
+    // Accounting module
+    { path: '/accounting', component: require('components/accounting/main'),
+      children: [
+        { path: 'billing', component: require('components/accounting/billingList') },
+        { path: 'billing/:paymentId', component: require('components/accounting/billingView') },
+        { path: 'credits', component: require('components/accounting/creditsList') },
+        { path: 'credits/:invoiceId', component: require('components/accounting/creditsView') },
+        { path: 'invoices', component: require('components/accounting/invoicesList') },
+        { path: 'invoices/:invoiceId', component: require('components/accounting/invoicesView') },
+        { path: 'ledger', component: require('components/accounting/ledgerList') },
+        { path: 'ledger/:contactId', component: require('components/accounting/ledgerView') },
+        { path: 'pointsofsale', component: require('components/accounting/posList') },
+        { path: 'pointsofsale/:posId', component: require('components/accounting/posView') }
+      ]
+    },
+
+    //       '/debits/': {
+    //         component: require('components/accounting/debitsList')
+    //       },
+
     // Contacts module
     { path: '/contacts', component: require('components/contacts/main'),
       children: [
@@ -67,45 +87,6 @@ export const router = new VueRouter({
   ]
 })
 
-//   '/accounting/': {
-//     component: require('components/accounting/main'),
-//     subRoutes: {
-//       '/billing/': {
-//         component: require('components/accounting/billingList')
-//       },
-//       '/billing/:paymentId/': {
-//         component: require('components/accounting/billingView')
-//       },
-//       '/credits/': {
-//         component: require('components/accounting/creditsList')
-//       },
-//       '/credits/:invoiceId/': {
-//         component: require('components/accounting/creditsView')
-//       },
-//       '/debits/': {
-//         component: require('components/accounting/debitsList')
-//       },
-//       '/invoices/': {
-//         component: require('components/accounting/invoicesList')
-//       },
-//       '/invoices/:invoiceId/': {
-//         component: require('components/accounting/invoicesView')
-//       },
-//       '/ledger/': {
-//         component: require('components/accounting/ledgerList')
-//       },
-//       '/ledger/:contactId/': {
-//         component: require('components/accounting/ledgerView')
-//       },
-//       '/pointsofsale/': {
-//         component: require('components/accounting/posList')
-//       },
-//       '/pointsofsale/:posId': {
-//         component: require('components/accounting/posView')
-//       }
-//     }
-//   },
-
 // Check if we're still authenticated
 router.beforeEach((to, from, next) => {
   auth.checkAuth()
@@ -119,31 +100,15 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-// router.beforeEach(function (transition) {
-//   auth.checkAuth()
-//   Vue.http.headers.common['Authorization'] = auth.getAuthHeader()
-//   Vue.http.headers.common['Accept-Language'] = 'es'
-//   if (transition.to.path !== '/login' && !auth.user.authenticated) {
-//     router.push('/login')
-//   } else if (transition.to.path === '/login' && auth.user.authenticated) {
-//     router.push('/')
-//   }
-//   transition.next()
-// })
-
 // Set up the error notification hub
 export var eventHub = new Vue()
+Vue.prototype.eventHub = eventHub
 
 // Load ulil components
 Vue.component('HomeAddress', require('src/utils/components/HomeAddress.vue'))
 Vue.component('ButtonBar', require('src/utils/components/ButtonBar.vue'))
 Vue.component('Locality', require('src/utils/components/Locality.vue'))
 Vue.component('OneToOne', require('src/utils/components/OneToOne.vue'))
-
-// Showtime
-// window.addEventListener('load', function () {
-//   router.start(App, 'app')
-// })
 
 Vue.filter('default', function (value, _default) {
   return value || _default

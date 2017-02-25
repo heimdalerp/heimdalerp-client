@@ -38,6 +38,7 @@
 <script>
 import auth from '../auth'
 export default {
+  name: 'Login',
   data () {
     return {
       credentials: {

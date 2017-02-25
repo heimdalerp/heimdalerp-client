@@ -54,7 +54,7 @@
 
         <!-- Left column -->
         <div class="col-sm-6 col-xs-12">
-          <home-address :editing="editing" :value="invoice_ar_contact.invoice_contact.fiscal_address"></home-address>
+          <home-address :editing="editing" v-model="invoice_ar_contact.invoice_contact.fiscal_address"></home-address>
           <locality :editing="editing" v-model="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
         </div>
 
@@ -87,7 +87,7 @@ import auth from '../../auth/index.js'
 import { addContact, editContact, getContacts, getFiscalPositions } from '../../vuex/actions'
 
 export default {
-  name: 'ContactView',
+  name: 'View',
   data () {
     return {
       bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
@@ -164,9 +164,6 @@ export default {
           this.$router.push('/contacts')
         })
       }
-    },
-    updateAddress (address) {
-      this.invoice_ar_contact.invoice_contact.fiscal_address = address
     }
   },
 
@@ -203,11 +200,13 @@ export default {
 
     let fiscalPositionsLoaded = this.getFiscalPositions()
 
-    contactLoaded.then(function () {
-      vm.$http.get(vm.invoice_ar_contact.invoice_contact.fiscal_address.locality).then(function (response) {
-        vm.invoice_ar_contact.invoice_contact.fiscal_address.locality = response.data
+    if (vm.$route.params.contactId !== 'new') {
+      contactLoaded.then(function () {
+        vm.$http.get(vm.invoice_ar_contact.invoice_contact.fiscal_address.locality).then(function (response) {
+          vm.invoice_ar_contact.invoice_contact.fiscal_address.locality = response.data
+        })
       })
-    })
+    }
 
     Promise.all([contactLoaded, fiscalPositionsLoaded]).then(function () {
       vm.invoice_ar_contact.invoice_contact.fiscal_position =
@@ -226,10 +225,6 @@ export default {
       getContacts,
       getFiscalPositions
     }
-  },
-
-  route: {
-    canReuse: false
   }
 }
 </script>

@@ -95,9 +95,9 @@
             </tr>
           </tfoot>
           <tbody v-if="editing">
-            <tr v-for="line in invoice_lines">
+            <tr v-for="(line, index) in invoice_lines">
               <td>
-                <input :id="'line-' + $index" type="text" class="form-control" :disabled="line._deleted || !editing" />
+                <input :id="'line-' + index" type="text" class="form-control" :disabled="line._deleted || !editing" />
               </td>
               <td><textarea rows="1" v-model="line.description" class="form-control" :disabled="line._deleted || !editing"></textarea></td>
               <td><input size="3"  type="text" v-model="line.quantity" class="form-control" :disabled="line._deleted || !editing"></td>
@@ -344,6 +344,7 @@ export default {
         }
       })
       elt.on('itemAdded', function (event) {
+        console.log(event.currentTarget.id)
         var line = event.currentTarget.id.split('-')[1]
         let product = vm.getProduct(event.item)
         vm.invoice_lines[line].price_sold = product.current_price
@@ -361,7 +362,15 @@ export default {
       },
       concept_type: {},
       invoice_type: {},
-      point_of_sale_ar: {}
+      point_of_sale_ar: {},
+      invoice_date: (function () {
+        let today = new Date()
+        return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+      })(),
+      due_date: (function () {
+        let today = new Date()
+        return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+      })()
     }
 
     this.p1 = this.getInvoices()
@@ -380,7 +389,7 @@ export default {
     this.p5 = this.getPOSs()
   },
 
-  ready () {
+  mounted () {
     var vm = this
 
     Promise.all([this.p1, this.p2, this.p3, this.p4, this.p5]).then(function () {

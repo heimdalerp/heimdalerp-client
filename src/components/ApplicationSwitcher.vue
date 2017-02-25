@@ -13,6 +13,7 @@
 
 <script>
 export default {
+  name: 'Application-Switcher',
   data () {
     return {
       modules: [

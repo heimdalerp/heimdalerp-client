@@ -24,7 +24,7 @@
               <!-- It's a dropdown submenu -->
               <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{subMenuElement.name}} <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li v-for="subSubMenuElement in subMenuElement.subElements"><router-link to="subSubMenuElement.link">{{subSubMenuElement.name}}</router-link></li>
+                <li v-for="subSubMenuElement in subMenuElement.subElements"><router-link :to="subSubMenuElement.link">{{subSubMenuElement.name}}</router-link></li>
               </ul>
             </li>
           </ul>
@@ -36,7 +36,7 @@
       </div><!-- /.container-fluid -->
     </nav>
     <div id="oe" class="container-fluid">
-      <router-view></router-view>
+      <router-view :key="$route.path"></router-view>
     </div>
 
     <!-- Error -->
@@ -83,6 +83,7 @@ import store from './vuex/store'
 import { eventHub } from './main'
 
 export default {
+  name: 'App',
   store,
   data () {
     return {

@@ -9,12 +9,12 @@
         <th>Email</th>
       </thead>
       <tbody>
-        <tr v-for="contact in contacts" v-link="'/accounting/ledger/' + contact.id">
+        <router-link tag="tr" v-for="contact in contacts" :to="'/accounting/ledger/' + contact.id">
           <td><input type="checkbox"></td>
           <td>{{contact.invoice_contact.contact_contact.name}}</td>
           <td>{{contact.invoice_contact.contact_contact.phone_numbers}}</td>
           <td>{{contact.invoice_contact.contact_contact.extra_emails}}</td>
-        </tr>
+        </router-link>
         <tr v-if="contacts.length === 0">
           <td colspan="4">Sin resultados.</td>
         </tr>
@@ -27,6 +27,7 @@
 import { getContacts } from '../../vuex/actions'
 
 export default {
+  name: 'Ledger-List',
   components: {
     'ButtonBar': require('../../utils/components/ButtonBar.vue')
   },

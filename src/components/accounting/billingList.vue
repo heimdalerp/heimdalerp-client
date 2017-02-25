@@ -11,14 +11,14 @@
         <th>Método</th>
       </thead>
       <tbody>
-        <tr v-for="payment in payments" v-link="'/accounting/billing/' + payment.id">
+        <router-link tag="tr" v-for="payment in payments" :to="'/accounting/billing/' + payment.id">
           <td><input type="checkbox"></td>
           <td>{{ payment.payment_date }}</td>
           <td>{{ payment.contact_contact }}</td>
           <td>${{ payment.amount }}</td>
           <td>{{ type_string(payment.payment_type) }}</td>
           <td>{{ method_string(payment.payment_method) }}</td>
-        </tr>
+        </router-link>
         <tr v-if="payments !== null && payments.length === 0">
           <td colspan="6">Sin resultados.</td>
         </tr>

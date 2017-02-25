@@ -35,6 +35,7 @@ import auth from '../../auth/index.js'
 import { getProducts, addProduct, editProduct, getVATs } from '../../vuex/actions'
 
 export default {
+  name: 'Product-View',
   data () {
     return {
       bb_buttons: [{text: 'Editar', method: 'edit', condition: function () { return !this.editing }.bind(this)},
@@ -72,17 +73,18 @@ export default {
       }
 
       if (hasErrors === true) {
-        this.$dispatch('showError', msg)
+        this.eventHub.$emit('showError', msg)
         return false
       }
 
-      this.product.company = auth.user.company
+      this.product.invoice_company = auth.user.company_in
 
       let product = JSON.parse(JSON.stringify(this.product))
       product.vat = this.product.vat.url
 
-      if (this.$route.params.contactId === 'new') {
+      if (this.$route.params.productId === 'new') {
         this.addProduct(this, product).then(response => {
+          console.log(response)
           this.$router.push('products/' + response.data.id + '/')
         })
       } else {

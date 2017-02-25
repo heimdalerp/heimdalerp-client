@@ -93,22 +93,6 @@ export default {
         vm.invoices.forEach(function (invoice) {
           vm.db.insert(invoice)
         })
-
-        // TODO: Iterate between the months of the oldest and newest invoice
-        for (let i = 1; i <= 12; i++) {
-          var subtotalMonth = 0
-          var iPad = ('00' + i).substring(i.toString().length)
-
-          vm.db({invoice_date: {like: '2016-' + iPad}}).each(function (r) {
-            subtotalMonth += Math.round(r.total * 100) / 100
-          })
-
-          subtotalMonth = parseFloat(subtotalMonth).toFixed(2)
-
-          if (subtotalMonth !== '0.00') {
-            vm.lines.push({date: '2016-' + iPad + '-30', type: 'D', amount: subtotalMonth, description: 'Consumos de ' + i + ' 2016'})
-          }
-        }
       })
 
       // Get the payments for this contact

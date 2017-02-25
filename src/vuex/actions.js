@@ -269,14 +269,13 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSaleURL) {
   return p2
 }
 
-export const addProduct = function ({ _vm, dispatch }, product) {
+export const addProduct = function ({ _vm, dispatch }, context, product) {
   var p = _vm.$http.post('invoice/products/', product)
 
-  var p2 = p.then(response => {
+  return p.then(response => {
     dispatch('ACCOUNTING_PRODUCTS_ADD', product)
+    return response
   })
-
-  return p2
 }
 
 export const editProduct = function ({ dispatch }, context, product) {

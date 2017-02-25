@@ -27,6 +27,7 @@
 import { getProducts } from 'src/vuex/actions'
 
 export default {
+  name: 'Product-List',
   data () {
     return {
       bb_crumbs: ['Inventario'],

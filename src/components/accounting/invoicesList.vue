@@ -12,7 +12,7 @@
         <th>Estado</th>
       </thead>
       <tbody>
-        <tr v-for="invoice in invoices" v-link="'/accounting/invoices/' + invoice.id">
+        <router-link tag="tr" v-for="invoice in invoices" :to="'/accounting/invoices/' + invoice.id">
           <td><input type="checkbox"></td>
           <td>{{ invoice.invoicear_contact.invoice_contact.legal_name }}</td>
           <td>{{ invoice.due_date }}</td>
@@ -21,7 +21,7 @@
           <td>{{ invoice.due_date }}</td>
           <td>$ {{ invoice.total }}</td>
           <td>{{ status_string(invoice.status) }}</td>
-        </tr>
+        </router-link>
         <tr v-if="invoices.length === 0">
           <td colspan="4">Sin resultados.</td>
         </tr>

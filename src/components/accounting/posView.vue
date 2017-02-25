@@ -9,8 +9,8 @@
           <p v-else>{{ pos.fantasy_name }}</p>
         </div>
       </div>
-      <address :editing="editing" @update="updateAddress" :value="pos.fiscal_address"></address>
-      <locality :editing="editing" @update="updateLocality" :url="pos.fiscal_address.locality"></locality>
+      <home-address :editing="editing" v-model="pos.fiscal_address"></home-address>
+      <locality :editing="editing" v-model="pos.fiscal_address.locality"></locality>
 
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
@@ -22,8 +22,8 @@
 
       <div class="col-sm-6 col-xs-12">
         <div class="form-group">
-          <one-to-one v-if="editing" :name="ototype.name" :options="ototype.options" :model.sync="pos.point_of_sale_type"></one-to-one>
-          <div v-else><label>Tipo</label><p>{{ type_string }}</p></div>
+          <one-to-one v-if="editing" name="Tipo" display="name" :options="pos_types" v-model="pos.point_of_sale_type"></one-to-one>
+          <div v-else><label>Tipo</label><p>{{ pos.point_of_sale_type.name | default('-') }}</p></div>
         </div>
       </div>
 
@@ -36,18 +36,19 @@ import auth from '../../auth/index'
 
 export default {
   computed: {
-    type_string () {
-      switch (this.pos.point_of_sale_type) {
-        case 'C':
-          return 'Fiscal Controller'
-        case 'F':
-          return 'Pre-printed'
-        case 'W':
-          return 'Webservice'
-        case 'L':
-          return 'Online'
-      }
-    },
+    // type_string () {
+    //   return this.pos_types.find(t => t.id === this.pos.point_of_sale_type.id)
+    //   // switch (this.pos.point_of_sale_type) {
+    //   //   case 'C':
+    //   //     return 'Fiscal Controller'
+    //   //   case 'F':
+    //   //     return 'Pre-printed'
+    //   //   case 'W':
+    //   //     return 'Webservice'
+    //   //   case 'L':
+    //   //     return 'Online'
+    //   // }
+    // },
     currentPos () {
       return this.POSs.find(p => p.id === parseInt(this.$route.params.posId))
     }
@@ -60,10 +61,10 @@ export default {
                    {text: 'Descartar', method: 'discard', class: 'btn-link', condition: function () { return this.editing }.bind(this)}],
       editing: false,
       pos: {},
-      ototype: {name: 'Tipo', options: [{id: 'C', name: 'Fiscal Controller'},
-                                        {id: 'F', name: 'Pre-printed'},
-                                        {id: 'W', name: 'Webservice'},
-                                        {id: 'L', name: 'Online'}]}
+      pos_types: [{id: 'C', name: 'Fiscal Controller'},
+                  {id: 'F', name: 'Pre-printed'},
+                  {id: 'W', name: 'Webservice'},
+                  {id: 'L', name: 'Online'}]
     }
   },
   methods: {
@@ -83,39 +84,48 @@ export default {
       }
     },
     save () {
+      let pos = JSON.parse(JSON.stringify(this.pos))
+
+      pos.point_of_sale_type = pos.point_of_sale_type.id
+      pos.fiscal_address.locality = pos.fiscal_address.locality.url
+
       if (this.$route.params.posId === 'new') {
-        this.addPOS(this.pos).then(response => {
+        this.addPOS(pos).then(response => {
           this.$router.push('/accounting/pointsofsale/' + response.data.id + '/')
         })
       } else {
-        this.editPOS(this, this.pos).then(() => {
+        this.editPOS(this, pos).then(() => {
           this.$router.push('/accounting/pointsofsale')
         })
       }
-    },
-    updateAddress (address) {
-      this.pos.fiscal_address = address
-    },
-    updateLocality (url) {
-      this.pos.fiscal_address.locality = url
     }
   },
 
   created () {
     this.pos = Object.assign({}, {
       invoicear_company: auth.user.company_ar,
-      fiscal_address: {}
+      fiscal_address: {},
+      point_of_sale_type: {}
     })
 
-    this.getPOSs().then(function (response) {
+    let posLoaded = this.getPOSs().then(function (response) {
       if (this.$route.params.posId === 'new') {
         this.editing = true
         this.bb_crumbs.push('Crear nuevo Punto de Venta')
       } else {
         this.pos = JSON.parse(JSON.stringify(this.currentPos))
+        this.pos.point_of_sale_type = this.pos_types.find(t => t.id === this.pos.point_of_sale_type)
         this.bb_crumbs.push(this.pos.afip_id)
       }
     })
+
+    if (this.$route.params.posId !== 'new') {
+      posLoaded.then(function () {
+        this.$http.get(this.pos.fiscal_address.locality).then(function (response) {
+          this.pos.fiscal_address.locality = response.data
+        })
+      })
+    }
   },
 
   vuex: {
