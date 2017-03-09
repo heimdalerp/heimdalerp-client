@@ -190,6 +190,11 @@ html, body {
   border-radius: 0px;
 }
 
+/* Be more specific. The above is overriden by bootstrap modal css. */
+.modal-footer .btn {
+  margin-bottom: 5px;
+}
+
 /* Hack so href="#" is not needed*/
 a {
   cursor: pointer;
@@ -283,8 +288,11 @@ table {
   background-color: #428bca;
 }
 
-/* Fix Boostrap bolding inputs inside labels */
-/*label input {
+label input {
     font-weight:normal
-}*/
+}
+
+label select {
+    font-weight:normal
+}
 </style>

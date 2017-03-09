@@ -269,13 +269,17 @@ export const getPOS = function ({ _vm, dispatch }, pointOfSaleURL) {
   return p2
 }
 
-export const addProduct = function ({ _vm, dispatch }, context, product) {
-  var p = _vm.$http.post('invoice/products/', product)
+export const addProduct = function ({ _vm, dispatch, state }, context, product) {
+  let productCreated = _vm.$http.post('invoice/products/', product)
 
-  return p.then(response => {
-    dispatch('ACCOUNTING_PRODUCTS_ADD', product)
-    return response
+  let newProduct = productCreated.then(response => {
+    response.data.vat = context.vats.find(v => v.url === response.data.vat)
+    dispatch('ACCOUNTING_PRODUCTS_ADD', response.data)
+
+    return state.accounting.products.all.find(p => p.url === response.data.url)
   })
+
+  return newProduct
 }
 
 export const editProduct = function ({ dispatch }, context, product) {
@@ -355,12 +359,13 @@ export const getContact = function ({ _vm, dispatch }, url) {
   return p
 }
 
-export const addContact = function ({ _vm, dispatch }, context, contact) {
-  var p = context.$http.post('invoice_ar/contacts/', contact)
-  p.then(response => {
-    dispatch('ADD_CONTACT', contact)
+export const addContact = function ({ _vm, dispatch, state }, context, contact) {
+  let contactCreated = context.$http.post('invoice_ar/contacts/', contact)
+  let newContact = contactCreated.then(response => {
+    dispatch('ADD_CONTACT', response.data)
+    return state.contacts.all.find(c => c.url === response.data.url)
   })
-  return p
+  return newContact
 }
 
 export const editContact = function ({ _vm, dispatch }, contact) {

@@ -139,7 +139,7 @@ export default {
       }
 
       if (hasErrors === true) {
-        this.$dispatch('showError', msg)
+        this.eventHub.$emit('showError', msg)
         return false
       }
 

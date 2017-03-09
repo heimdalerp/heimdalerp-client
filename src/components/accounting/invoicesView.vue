@@ -17,7 +17,17 @@
         <div class="form-group" style="max-height: 59px">
           <label>Contacto</label>
           <p v-if="!editing">{{ invoice.invoicear_contact.invoice_contact.legal_name }}</p>
-          <span v-else><input id="contactInput" type="text" class="form-control"></span>
+          <div class="input-group">
+            <select class="form-control" v-model="invoice.invoicear_contact">
+              <option v-for="contact in contacts" :value="contact">{{ contact.invoice_contact.legal_name }}</option>
+            </select>
+            <div class="input-group-addon">
+              <span class="glyphicon glyphicon-search" @click="openContactListQuick"></span>
+            </div>
+            <div class="input-group-addon">
+              <span class="glyphicon glyphicon-plus" @click="openContactViewQuick"></span>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label>Tipo</label>
@@ -76,7 +86,7 @@
         </div>
       </div>
 
-      <div class="col-xs-12">
+
         <table class="table table-striped table-condensed">
           <thead>
             <tr>
@@ -95,9 +105,19 @@
             </tr>
           </tfoot>
           <tbody v-if="editing">
-            <tr v-for="(line, index) in invoice_lines">
+            <tr v-for="line in invoice_lines">
               <td>
-                <input :id="'line-' + index" type="text" class="form-control" :disabled="line._deleted || !editing" />
+                <div class="input-group">
+                  <select class="form-control" v-model="line.product" @change="updateProduct(line)">
+                    <option v-for="product in products" :value="product">{{ product.name }}</option>
+                  </select>
+                  <div class="input-group-addon">
+                    <span class="glyphicon glyphicon-search"></span>
+                  </div>
+                  <div class="input-group-addon" @click="openProductViewQuick(line)">
+                    <span class="glyphicon glyphicon-plus"></span>
+                  </div>
+                </div>
               </td>
               <td><textarea rows="1" v-model="line.description" class="form-control" :disabled="line._deleted || !editing"></textarea></td>
               <td><input size="3"  type="text" v-model="line.quantity" class="form-control" :disabled="line._deleted || !editing"></td>
@@ -113,7 +133,7 @@
                   <div class="input-group-addon">%</div>
                 </div>
               </td>
-              <td><p>{{ line.vat }}%</p></td>
+              <td><p>{{ line.product.vat }}%</p></td>
               <td>
                 <span v-if="!line._deleted" class="glyphicon glyphicon-trash" @click="removeItem(line)"></span>
                 <span v-else class="glyphicon glyphicon-backward" @click="undoRemove(line)"></span>
@@ -131,51 +151,57 @@
             </tr>
           </tbody>
         </table>
+
+      <div class="row">
+        <div class="col-xs-8">
+        </div>
+        <div class="col-xs-4">
+          <div class="col-xs-12">
+            <div class="col-xs-4">
+              <label>Neto:</label>
+            </div>
+            <div class="col-xs-8">
+              <span v-if="editing">${{ net }}</span>
+              <span v-else>${{ invoice.subtotal }}</span>
+            </div>
+          </div>
+          <div class="col-xs-12">
+            <div class="col-xs-4">
+              <label>Impuestos:</label>
+            </div>
+            <div class="col-xs-8">
+              <span v-if="editing">${{ tax }}</span>
+              <span v-else>${{ invoice.vat_total }}</span>
+            </div>
+          </div>
+          <div class="col-xs-12">
+            <div class="col-xs-4">
+              <label>Total:</label>
+            </div>
+            <div class="col-xs-8">
+              <span v-if="editing">${{ total }}</span>
+              <span v-else>${{ invoice.total }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="col-xs-8">
-      </div>
-      <div class="col-xs-4">
-        <div class="col-xs-12">
-          <div class="col-xs-4">
-            <label>Neto:</label>
-          </div>
-          <div class="col-xs-8">
-            <span v-if="editing">${{ net }}</span>
-            <span v-else>${{ invoice.subtotal }}</span>
-          </div>
-        </div>
-        <div class="col-xs-12">
-          <div class="col-xs-4">
-            <label>Impuestos:</label>
-          </div>
-          <div class="col-xs-8">
-            <span v-if="editing">${{ tax }}</span>
-            <span v-else>${{ invoice.vat_total }}</span>
-          </div>
-        </div>
-        <div class="col-xs-12">
-          <div class="col-xs-4">
-            <label>Total:</label>
-          </div>
-          <div class="col-xs-8">
-            <span v-if="editing">${{ total }}</span>
-            <span v-else>${{ invoice.total }}</span>
-          </div>
-        </div>
-      </div>
-
+      <contact-view-quick ref="contactViewQuick" v-model="contactCreated"></contact-view-quick>
+      <product-view-quick ref="productViewQuick" v-model="productCreated"></product-view-quick>
     </div>
   </div>
 </template>
 <script>
-import ButtonBar from '../../utils/components/ButtonBar.vue'
+import contactViewQuick from '../contacts/viewQuick'
+import productViewQuick from '../inventory/productViewQuick'
+
 import Vue from 'vue'
 import { addInvoice, getInvoices, getInvoiceTypes, getContacts, getProducts, getPOSs } from '../../vuex/actions'
 
 export default {
   components: {
-    ButtonBar
+    contactViewQuick,
+    productViewQuick
   },
   computed: {
     selectedPos () {
@@ -193,7 +219,7 @@ export default {
     tax () {
       var sum = 0
       for (let line of this.invoice_lines) {
-        sum += (line.price_sold * line.quantity * (100 - line.discount) / 100) * line.vat / 100
+        sum += (line.price_sold * line.quantity * (100 - line.discount) / 100) * line.product.vat / 100
       }
       return sum.toFixed(2)
     },
@@ -210,19 +236,16 @@ export default {
                    {text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', condition: function () { return this.editing }.bind(this), class: 'btn-link'},
                    {text: 'Generar Crédito', method: 'credit', condition: function () { return this.can_credit() }.bind(this)},
-                   {text: 'Generar Débito', method: 'debit', condition: function () { return this.can_debit() }.bind(this)}
-                    ],
+                   {text: 'Generar Débito', method: 'debit', condition: function () { return this.can_debit() }.bind(this)}],
       invoice: {},
       invoice_lines: [],
       productPromise: null,
       productEngine: null,
-      p1: null,
-      p2: null,
-      p3: null,
-      p4: null,
-      p5: null,
       editing: true,
-      pointofsale: null
+      pointofsale: null,
+      contactCreated: null,
+      productCreated: null,
+      lineToPlaceNewProduct: null
     }
   },
   methods: {
@@ -283,7 +306,6 @@ export default {
 
       if (this.$route.params.invoiceId === 'new') {
         this.addInvoice(invoice).then(function (response) {
-          console.log(response)
           this.$router.push(`/accounting/invoices/${response.data.id}/`)
         })
       }
@@ -301,55 +323,30 @@ export default {
         quantity: '',
         vat: 0
       })
-      var vm = this
-      Vue.nextTick(function () {
-        vm.initProducts()
-      })
     },
     removeItem (item) {
       Vue.set(item, '_deleted', true)
     },
+
     undoRemove (item) {
       Vue.set(item, '_deleted', false)
     },
-    initProducts () {
-      let vm = this
-      let elt
 
-      if (this.productEngine === null) {
-        let products = vm.products.map(function (product) {
-          var map = {}
-          map['url'] = product.url
-          map['name'] = product.name
-          return map
-        })
+    openContactViewQuick () {
+      this.$refs.contactViewQuick.open()
+    },
 
-        this.productEngine = new window.Bloodhound({
-          datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
-          queryTokenizer: window.Bloodhound.tokenizers.whitespace,
-          local: products
-        })
-        this.productEngine.initialize()
-      }
+    openContactListQuick () {
+      console.log('stub')
+    },
 
-      elt = window.jQuery('[id^=line]')
-      elt.tagsinput({
-        maxTags: 1,
-        itemValue: 'url',
-        itemText: 'name',
-        typeaheadjs: {
-          name: 'engine',
-          displayKey: 'name',
-          source: this.productEngine.ttAdapter()
-        }
-      })
-      elt.on('itemAdded', function (event) {
-        console.log(event.currentTarget.id)
-        var line = event.currentTarget.id.split('-')[1]
-        let product = vm.getProduct(event.item)
-        vm.invoice_lines[line].price_sold = product.current_price
-        vm.invoice_lines[line].vat = product.vat.tax * 100
-      })
+    openProductViewQuick (lineToPlaceNewProduct) {
+      this.lineToPlaceNewProduct = lineToPlaceNewProduct
+      this.$refs.productViewQuick.open()
+    },
+
+    updateProduct (line) {
+      line.price_sold = line.product.current_price
     }
   },
 
@@ -373,8 +370,7 @@ export default {
       })()
     }
 
-    this.p1 = this.getInvoices()
-    this.p1.then(function () {
+    this.getInvoices().then(function () {
       if (vm.$route.params.invoiceId !== 'new') {
         vm.editing = false
 
@@ -383,90 +379,63 @@ export default {
         })))
       }
     })
-    this.p2 = this.getInvoiceTypes()
-    this.p3 = this.getContacts()
-    this.p4 = this.getProducts()
-    this.p5 = this.getPOSs()
+    this.getInvoiceTypes()
+    this.getContacts()
+    this.getProducts()
+    this.getPOSs()
   },
 
   mounted () {
-    var vm = this
-
-    Promise.all([this.p1, this.p2, this.p3, this.p4, this.p5]).then(function () {
-      // Init the contact input
-      var bhContacts = vm.contacts.map(function (contact) {
-        var map = {}
-        map['url'] = contact.url
-        map['name'] = contact.invoice_contact.legal_name
-        return map
-      })
-
-      var engine = new window.Bloodhound({
-        datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
-        queryTokenizer: window.Bloodhound.tokenizers.whitespace,
-        local: bhContacts
-      })
-      engine.initialize()
-
-      var elt = window.jQuery('#contactInput')
-      elt.tagsinput({
-        maxTags: 1,
-        itemValue: 'url',
-        itemText: 'name',
-        typeaheadjs: {
-          name: 'engine',
-          displayKey: 'name',
-          source: engine.ttAdapter()
-        }
-      })
-
-      // Init the calendar
-      window.jQuery('.daterangepicker').remove()
-      window.jQuery('.calendar').daterangepicker({
-        'singleDatePicker': true,
-        'locale': {
-          'format': 'YYYY-MM-DD',
-          'separator': ' - ',
-          'applyLabel': 'Apply',
-          'cancelLabel': 'Cancel',
-          'fromLabel': 'From',
-          'toLabel': 'To',
-          'customRangeLabel': 'Custom',
-          'weekLabel': 'W',
-          'daysOfWeek': [
-            'Do',
-            'Lu',
-            'Ma',
-            'Mi',
-            'Ju',
-            'Vi',
-            'Sa'
-          ],
-          'monthNames': [
-            'Enero',
-            'Febrero',
-            'Marzo',
-            'Abril',
-            'Mayo',
-            'Junio',
-            'Julio',
-            'Agosto',
-            'Septiembre',
-            'Octubre',
-            'Noviembre',
-            'Diciembre'
-          ],
-          'firstDay': 1
-        },
-        'startDate': (function () {
-          let today = new Date()
-          return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
-        })()
-      })
-
-      // Init the product inputs
-      vm.initProducts()
+    // Init the calendar
+    window.jQuery('.daterangepicker').remove()
+    window.jQuery('.calendar').daterangepicker({
+      'singleDatePicker': true,
+      'locale': {
+        'format': 'YYYY-MM-DD',
+        'separator': ' - ',
+        'applyLabel': 'Apply',
+        'cancelLabel': 'Cancel',
+        'fromLabel': 'From',
+        'toLabel': 'To',
+        'customRangeLabel': 'Custom',
+        'weekLabel': 'W',
+        'daysOfWeek': [
+          'Do',
+          'Lu',
+          'Ma',
+          'Mi',
+          'Ju',
+          'Vi',
+          'Sa'
+        ],
+        'monthNames': [
+          'Enero',
+          'Febrero',
+          'Marzo',
+          'Abril',
+          'Mayo',
+          'Junio',
+          'Julio',
+          'Agosto',
+          'Septiembre',
+          'Octubre',
+          'Noviembre',
+          'Diciembre'
+        ],
+        'firstDay': 1
+      }
     })
+  },
+
+  watch: {
+    contactCreated (newContact) {
+      this.invoice.invoicear_contact = newContact
+    },
+
+    productCreated (newProduct) {
+      this.lineToPlaceNewProduct.product = newProduct
+      this.updateProduct(this.lineToPlaceNewProduct)
+    }
   },
 
   vuex: {

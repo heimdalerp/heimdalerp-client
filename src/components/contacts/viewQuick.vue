@@ -1,7 +1,5 @@
 <template>
   <div>
-    <span class="glyphicon glyphicon-plus" @click="open"></span>
-
     <!-- Create Organization Modal -->
     <div id="createContactModal" class="modal fade" role="dialog">
       <div class="modal-dialog">
@@ -13,18 +11,35 @@
             <h4 class="modal-title">Crear Contacto</h4>
           </div>
           <div class="modal-body">
-              <input
-                type="text"
-                class="form-control input-lg"
-                v-model="invoice_ar_contact.invoice_contact.contact_contact.name"
-                placeholder="Razón Social"
-                />
-                <one-to-one v-if="editing" name="Posición fiscal" display="name" :options="fiscalpositions" v-model="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
+            <div class="row">
+              <div class="col-xs-12">
+                <input
+                  type="text"
+                  class="form-control input-lg"
+                  v-model="invoice_ar_contact.invoice_contact.contact_contact.name"
+                  placeholder="Razón Social">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-12">
+                <one-to-one name="Posición fiscal" display="name" :options="fiscalpositions" v-model="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-3">
                 <one-to-one name="Identificación" display="name" :options="idtypes" v-model="invoice_ar_contact.id_type"></one-to-one>
+              </div>
+              <div class="col-xs-9">
+                <label></label>
                 <input class="form-control" type="text" name="name" v-model="invoice_ar_contact.id_number"/>
-
-                <home-address editing="true" v-model="invoice_ar_contact.invoice_contact.fiscal_address"></home-address>
-                <locality editing="true" v-model="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
+              </div>
+            </div>
+            <div class="row">
+              <home-address editing="true" v-model="invoice_ar_contact.invoice_contact.fiscal_address"></home-address>
+            </div>
+            <div class="row">
+              <locality editing="true" v-model="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" @click="save">Save</button>
@@ -72,31 +87,26 @@ export default {
       }
 
       if (hasErrors === true) {
-        this.$dispatch('showError', msg)
+        this.eventHub.$emit('showError', msg)
         return false
       }
 
-      this.invoice_ar_contact.id_type = this.invoice_ar_contact.id_type.id
-      this.invoice_ar_contact.invoice_contact.fiscal_position =
+      let contact = JSON.parse(JSON.stringify(this.invoice_ar_contact))
+
+      contact.id_type = this.invoice_ar_contact.id_type.id
+      contact.invoice_contact.fiscal_position =
         this.invoice_ar_contact.invoice_contact.fiscal_position.url
-      this.invoice_ar_contact.invoice_contact.legal_name =
+      contact.invoice_contact.legal_name =
         this.invoice_ar_contact.invoice_contact.contact_contact.name
-      this.invoice_ar_contact.invoice_contact.contact_contact.home_address =
-        this.invoice_ar_contact.invoice_contact.fiscal_address
+      contact.invoice_contact.fiscal_address.locality =
+        contact.invoice_contact.fiscal_address.locality.url
+      contact.invoice_contact.contact_contact.home_address =
+        contact.invoice_contact.fiscal_address
 
-      let invoice = this.invoice_ar_contact
-      invoice.invoice_contact.fiscal_address.locality =
-        invoice.invoice_contact.fiscal_address.locality.url
-
-      if (this.$route.params.contactId === 'new') {
-        this.addContact(this, invoice).then(response => {
-          // this.$router.push('/contacts/' + response.data.id + '/')
-        })
-      } else {
-        this.editContact(invoice).then(response => {
-          // this.$router.push('/contacts')
-        })
-      }
+      this.addContact(this, contact).then(contact => {
+        this.$emit('input', contact)
+        this.dismiss()
+      })
     },
     dismiss () {
       window.jQuery('#createContactModal').modal('hide')
@@ -123,6 +133,7 @@ export default {
         }
       }
     }
+    this.getFiscalPositions()
   },
 
   vuex: {
@@ -137,3 +148,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.glyphicon {
+  margin-top: 6px;
+}
+</style>

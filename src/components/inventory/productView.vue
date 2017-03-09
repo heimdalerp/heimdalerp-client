@@ -23,7 +23,6 @@
             <p v-if="!editing">{{ product.vat.name }}</p>
           </div>
         </div>
-
       </div>
     </div>
     </form>

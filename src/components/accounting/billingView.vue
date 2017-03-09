@@ -2,71 +2,83 @@
   <div>
     <button-bar :crumbs="bb_crumbs" :buttons="bb_buttons"></button-bar>
     <div class="jumbotron container">
-      <div class="col-sm-6 col-xs-12">
-        <div class="form-group" style="max-height: 59px">
-          <label>Contacto</label>
-          <span v-if="editing">
-            <input id='contactInput' type='text' class='form-control' />
-            <contact-view-quick></contact-view-quick>
-          </span>
-          <p v-else>{{ payment.contact_contact }}</p>
-        </div>
-        <div class="form-group">
-          <label>Tipo</label>
-          <select v-if="editing" class="form-control" v-model="payment.payment_type">
-            <option v-bind:value="'S'">Enviar</option>
-            <option v-bind:value="'R'">Recibir</option>
-          </select>
-          <p v-else>{{ payment_type_human }}</p>
-        </div>
-        <div class="form-group" style="max-height: 59px">
-          <label>Monto</label>
-          <div v-if="editing" class="input-group">
-            <div class="input-group-addon">$</div>
-            <input type='text' class='form-control' v-model="payment.amount"/>
+      <div class="row">
+        <div class="col-sm-6 col-xs-12">
+          <div class="form-group" style="max-height: 59px">
+            <label>Contacto</label>
+            <div v-if="editing" class="input-group">
+              <select class="form-control" v-model="payment.contact_contact">
+                <option v-for="contact in contacts" :value="contact">{{ contact.invoice_contact.legal_name }}</option>
+              </select>
+              <div class="input-group-addon">
+                <span class="glyphicon glyphicon-plus" @click="openContactViewQuick"></span>
+              </div>
+              </div>
+            <p v-else>{{ payment.contact_contact }}</p>
           </div>
-          <p v-else>${{ payment.amount }}</p>
-        </div>
-      </div>
-
-      <div class="col-sm-6 col-xs-12">
-        <div class="form-group">
-          <label>Fecha</label>
-          <div v-if="editing" class="input-group">
-            <input id="demo" type="text" class="form-control" v-model="payment.payment_date">
-            <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select v-if="editing" class="form-control" v-model="payment.payment_type">
+              <option v-bind:value="'S'">Enviar</option>
+              <option v-bind:value="'R'">Recibir</option>
+            </select>
+            <p v-else>{{ payment_type_human }}</p>
           </div>
-          <p v-else>{{ payment.payment_date }}</p>
+          <div class="form-group" style="max-height: 59px">
+            <label>Monto</label>
+            <div v-if="editing" class="input-group">
+              <div class="input-group-addon">$</div>
+              <input type='text' class='form-control' v-model="payment.amount"/>
+            </div>
+            <p v-else>${{ payment.amount }}</p>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Método</label>
-          <select v-if="editing" class="form-control" v-model="payment.payment_method">
-            <option v-bind:value="'C'">Efectivo</option>
-            <option v-bind:value="'CC'">Tarj. Credito</option>
-            <option v-bind:value="'DB'">Tarj. Debito</option>
-            <option v-bind:value="'B'">Transferencia</option>
-            <option v-bind:value="'CH'">Cheque</option>
-            <option v-bind:value="'P'">PayPal</option>
-            <option v-bind:value="'GW'">Google Wallet</option>
-            <option v-bind:value="'BC'">Bitcoin</option>
-          </select>
-          <p v-else>{{ payment_method_human }}</p>
+
+        <div class="col-sm-6 col-xs-12">
+          <div class="form-group">
+            <label>Fecha</label>
+            <div v-if="editing" class="input-group">
+              <input id="demo" type="text" class="form-control" v-model="payment.payment_date">
+              <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
+            </div>
+            <p v-else>{{ payment.payment_date }}</p>
+          </div>
+          <div class="form-group">
+            <label>Método</label>
+            <select v-if="editing" class="form-control" v-model="payment.payment_method">
+              <option v-bind:value="'C'">Efectivo</option>
+              <option v-bind:value="'CC'">Tarj. Credito</option>
+              <option v-bind:value="'DB'">Tarj. Debito</option>
+              <option v-bind:value="'B'">Transferencia</option>
+              <option v-bind:value="'CH'">Cheque</option>
+              <option v-bind:value="'P'">PayPal</option>
+              <option v-bind:value="'GW'">Google Wallet</option>
+              <option v-bind:value="'BC'">Bitcoin</option>
+            </select>
+            <!-- <select v-if="editing" class="form-control" v-model="payment.payment_method">
+              <option v-for="paymentMethod in paymentMethods" :value="paymentMethod.id">{{ paymentMethod.name }}</option>
+            </select> -->
+            <p v-else>{{ payment_method_human }}</p>
+          </div>
         </div>
       </div>
 
-      <div class="col-sm-12">
-        <label>Descripción</label>
-        <textarea v-if="editing" v-model="payment.description"></textarea>
-        <p v-else>{{ payment.description | default('-') }}</p>
+      <div class="row">
+        <div class="col-sm-12">
+          <label>Descripción</label>
+          <textarea v-if="editing" v-model="payment.description"></textarea>
+          <p v-else>{{ payment.description | default('-') }}</p>
+        </div>
       </div>
-
+      <contact-view-quick ref="contactViewQuick" v-model="contactCreated"></contact-view-quick>
     </div>
+
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import { addPayment } from '../../vuex/actions'
+import { addPayment, getContacts } from '../../vuex/actions'
 
 export default {
   name: 'BillingView',
@@ -122,7 +134,16 @@ export default {
       bb_crumbs: ['Contabilidad', 'Pagos', 'Ingresar'],
       bb_buttons: [{text: 'Guardar', method: 'save', condition: function () { return this.editing }.bind(this)},
                    {text: 'Descartar', method: 'discard', class: 'btn-link', condition: function () { return this.editing }.bind(this)}],
-      payment: {}
+      payment: {},
+      paymentMethods: [{ id: 'C', name: 'Efectivo' },
+                       { id: 'CC', name: 'Tarj. Credito' },
+                       { id: 'DB', name: 'Tarj. Debito' },
+                       { id: 'B', name: 'Transferencia' },
+                       { id: 'CH', name: 'Cheque' },
+                       { id: 'P', name: 'PayPal' },
+                       { id: 'GW', name: 'Google Wallet' },
+                       { id: 'BC', name: 'Bitcoin' }],
+      contactCreated: {}
     }
   },
 
@@ -131,12 +152,17 @@ export default {
       this.$router.push('/accounting/billing/')
     },
     save () {
-      this.payment.contact_contact = window.jQuery('#contactInput').val()
-      this.payment.accounting_company = 'http://localhost:8000/api/accounting/companies/1/'
+      let payment = JSON.parse(JSON.stringify(this.payment))
+
+      payment.contact_contact = payment.contact_contact.contact_contact
+      payment.accounting_company = 'http://localhost:8000/api/accounting/companies/1/'
 
       this.addPayment(this.payment).then(function (response) {
         this.$router.push('/accounting/billing/')
       })
+    },
+    openContactViewQuick () {
+      this.$refs.contactViewQuick.open()
     }
   },
 
@@ -160,34 +186,12 @@ export default {
 
   mounted () {
     let vm = this
+    this.getContacts()
+
     Vue.nextTick(function () {
-      var p
       var $ = window.jQuery
-      var elt = $('#contactInput')
-      var engine
 
       if (vm.$route.params.paymentId === 'new') {
-        p = vm.$http.get('contact/contacts/')
-        p.then(function (response) {
-          engine = new window.Bloodhound({
-            datumTokenizer: window.Bloodhound.tokenizers.obj.whitespace('name'),
-            queryTokenizer: window.Bloodhound.tokenizers.whitespace,
-            local: response.data.results
-          })
-          engine.initialize()
-
-          elt.tagsinput({
-            maxTags: 1,
-            itemValue: 'url',
-            itemText: 'name',
-            typeaheadjs: {
-              name: 'engine',
-              displayKey: 'name',
-              source: engine.ttAdapter()
-            }
-          })
-        })
-
         $('#demo').daterangepicker({
           'singleDatePicker': true,
           'locale': {
@@ -235,12 +239,21 @@ export default {
       }
     })
   },
+
+  watch: {
+    contactCreated (newContact) {
+      this.payment.contact_contact = newContact
+    }
+  },
+
   vuex: {
     getters: {
+      contacts: state => state.contacts.all,
       payments: state => state.accounting.payments.all
     },
     actions: {
-      addPayment
+      addPayment,
+      getContacts
     }
   }
 }

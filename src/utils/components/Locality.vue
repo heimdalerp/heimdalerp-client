@@ -1,32 +1,45 @@
 <template>
-  <div>
-    <div class="col-xs-12">
-      <label>Localidad</label>
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12">
+        <label>Localidad</label>
+      </div>
     </div>
-    <div v-if="editing" class="col-xs-12">
-      <div class="col-xs-4">
-        <select class="form-control col-xs-4" v-model="country">
+    <div v-if="editing" class="row no-padding">
+      <div class="col-xs-12 col-sm-4">
+        <select class="form-control" v-model="country">
           <option v-for="country in countries" :value="country">{{ country.default_name }}</option>
         </select>
       </div>
-      <div class="col-xs-4">
-        <select class="form-control col-xs-4" v-model="region">
+      <div class="col-xs-12 col-sm-4">
+        <select class="form-control" v-model="region">
           <option v-for="region in regions" :value="region">{{ region.default_name }}</option>
         </select>
       </div>
-      <div class="col-xs-4">
-        <select class="form-control col-xs-4" v-model="locality">
-          <option v-for="locality in localities" :value="locality">{{ locality.default_name }}</option>
-        </select>
+      <div class="col-xs-12 col-sm-4">
+        <div class="input-group">
+          <select class="form-control" v-model="locality">
+            <option v-for="locality in localities" :value="locality">{{ locality.default_name }}</option>
+          </select>
+          <div class="input-group-addon">
+            <span class="glyphicon glyphicon-plus" @click="openCreateLocality"></span>
+          </div>
+        </div>
       </div>
     </div>
+
     <div class="col-xs-12" v-else>
       <p>{{ `${this.locality.default_name}, ${this.region.default_name}, ${this.country.default_name}` }}</p>
     </div>
+
+    <create-locality ref="createLocality" v-model="createdLocality"></create-locality>
   </div>
 </template>
 <script>
+import createLocality from '../../components/core/createLocality'
+
 export default {
+  components: { createLocality },
   props: ['editing', 'value'],
   data () {
     return {
@@ -34,9 +47,11 @@ export default {
       regions: [],
       localities: [],
       country: {},
-      region: {}
+      region: {},
+      createdLocality: null
     }
   },
+
   computed: {
     locality: {
       get () {
@@ -47,11 +62,13 @@ export default {
       }
     }
   },
+
   created: function () {
     this.$http.get('geo/countries/').then((response) => {
       this.countries = response.data.results
     })
   },
+
   watch: {
     // When the country changes, show its regions
     country (country) {
@@ -59,12 +76,14 @@ export default {
         this.regions = response.data.results
       })
     },
+
     // When the region changes, show its localities
     region (region) {
       this.$http.get(region.localities).then((response) => {
         this.localities = response.data.results
       })
     },
+
     value (value) {
       // When the parent gives us a locality, get its region and country
       if (typeof value === 'object') {
@@ -81,12 +100,37 @@ export default {
           })
         })
       }
+    },
+
+    createdLocality (newLocality) {
+      console.log('created locality' + newLocality)
+      this.$http.get(this.region.localities).then((response) => {
+        this.localities = response.data.results
+      })
+    }
+  },
+
+  methods: {
+    openCreateLocality () {
+      this.$refs.createLocality.open()
     }
   }
 }
 </script>
+
 <style scoped>
-.col-xs-4 {
-  padding: 0;
+@media(min-width:768px) {
+  .row.no-padding > div {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  .row.no-padding > div:first-child {
+    padding-left: 15px;
+  }
+
+  .row.no-padding > div:last-child {
+    padding-right: 15px;
+  }
 }
 </style>
