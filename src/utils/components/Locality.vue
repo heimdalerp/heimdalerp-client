@@ -1,28 +1,29 @@
 <template>
-  <div class="container">
-    <div class="row">
-      <div class="col-xs-12">
-        <label>Localidad</label>
-      </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <label>Localidad</label>
     </div>
-    <div v-if="editing" class="row no-padding">
-      <div class="col-xs-12 col-sm-4">
-        <select class="form-control" v-model="country">
-          <option v-for="country in countries" :value="country">{{ country.default_name }}</option>
-        </select>
-      </div>
-      <div class="col-xs-12 col-sm-4">
-        <select class="form-control" v-model="region">
-          <option v-for="region in regions" :value="region">{{ region.default_name }}</option>
-        </select>
-      </div>
-      <div class="col-xs-12 col-sm-4">
-        <div class="input-group">
-          <select class="form-control" v-model="locality">
-            <option v-for="locality in localities" :value="locality">{{ locality.default_name }}</option>
+
+    <div v-if="editing" class="col-xs-12">
+      <div class="row no-padding">
+        <div class="col-xs-12 col-sm-4">
+          <select class="form-control" v-model="country">
+            <option v-for="country in countries" :value="country">{{ country.default_name }}</option>
           </select>
-          <div class="input-group-addon">
-            <span class="glyphicon glyphicon-plus" @click="openCreateLocality"></span>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+          <select class="form-control" v-model="region">
+            <option v-for="region in regions" :value="region">{{ region.default_name }}</option>
+          </select>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+          <div class="input-group">
+            <select class="form-control" v-model="locality">
+              <option v-for="locality in localities" :value="locality">{{ locality.default_name }}</option>
+            </select>
+            <div class="input-group-addon">
+              <span class="glyphicon glyphicon-plus" @click="openCreateLocality"></span>
+            </div>
           </div>
         </div>
       </div>

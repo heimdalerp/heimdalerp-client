@@ -1,10 +1,9 @@
 <template>
   <div>
     <button-bar :crumbs="bb_crumbs" :buttons="bb_buttons"></button-bar>
-    <form novalidate>
     <div class="jumbotron">
-      <div class="col-xs-12">
-        <div class="col-xs-10">
+      <div class="row">
+        <div class="col-xs-12">
           <h2 v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.name }}</h2>
           <input
             type="text"
@@ -15,70 +14,81 @@
             />
         </div>
       </div>
-      <div class="col-xs-12">
-        <div class="col-xs-10">
+      <div class="row">
+        <div class="col-xs-12">
           <h6 v-if="!editing && type">Es una persona jurídica</h6>
           <h6 v-if="!editing && !type">Es una persona física</h6>
           <input v-if="editing" type="checkbox" v-model="type" /><span v-if="editing">Es una persona jurídica</span>
         </div>
       </div>
+
       <div class="row">
+        <div class="col-xs-12 col-sm-6">
+          <div class="row">
+            <div class="col-xs-5">
+              <div v-if="editing" class="form-group">
+                <one-to-one name="Identificación" display="name" :options="idtypes" v-model="invoice_ar_contact.id_type"></one-to-one>
+              </div>
+              <p v-if="!editing">{{ invoice_ar_contact.id_type.name }}</p>
+            </div>
 
-        <!-- Left column -->
-        <div class="col-sm-6 col-xs-12">
-          <div class="col-xs-12">
-            <div class="form-group">
-              <one-to-one v-if="editing" name="Posición fiscal" display="name" :options="fiscalpositions" v-model="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
-              <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_position.name }}</p>
+            <div class="col-xs-7">
+              <div v-if="editing" class="form-group">
+                <label>&nbsp;
+                  <input class="form-control" type="text" name="name" v-model="invoice_ar_contact.id_number"/>
+                </label>
+              </div>
+              <p v-if="!editing">{{ invoice_ar_contact.id_number }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Right column -->
-        <div class="col-sm-6 col-xs-12">
-          <div class="col-xs-5">
-            <div v-if="editing" class="form-group">
-              <one-to-one name="Identificación" display="name" :options="idtypes" v-model="invoice_ar_contact.id_type"></one-to-one>
-            </div>
-            <p v-if="!editing">{{ invoice_ar_contact.id_type.name }}</p>
-          </div>
-
-          <div class="col-xs-7">
-            <div v-if="editing" class="form-group">
-              <label>&nbsp;</label>
-              <input class="form-control" type="text" name="name" v-model="invoice_ar_contact.id_number"/>
-            </div>
-            <p v-if="!editing">{{ invoice_ar_contact.id_number }}</p>
+        <div class="col-xs-12 col-sm-6">
+          <div class="form-group">
+            <one-to-one v-if="editing" name="Posición fiscal" display="name" :options="fiscalpositions" v-model="invoice_ar_contact.invoice_contact.fiscal_position"></one-to-one>
+            <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.fiscal_position.name }}</p>
           </div>
         </div>
+      </div>
 
-        <!-- Left column -->
-        <div class="col-sm-6 col-xs-12">
+      <div class="row">
+        <div class="col-xs-12 col-sm-6">
           <home-address :editing="editing" v-model="invoice_ar_contact.invoice_contact.fiscal_address"></home-address>
+        </div>
+
+        <div class="col-xs-12 col-sm-6">
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label>
+                  Teléfonos
+                </label>
+                <input v-if="editing" class="form-control" type="text" v-model="invoice_ar_contact.invoice_contact.contact_contact.phone_numbers">
+                <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.phone_numbers | default('-')}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label>
+                  Direcciones de correo
+                </label>
+                <input v-if="editing" class="form-control" type="text" v-model="invoice_ar_contact.invoice_contact.contact_contact.extra_emails">
+                <p v-if="!editing">{{invoice_ar_contact.invoice_contact.contact_contact.extra_emails | default('-')}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12">
           <locality :editing="editing" v-model="invoice_ar_contact.invoice_contact.fiscal_address.locality"></locality>
         </div>
-
-        <!-- Right column -->
-        <div class="col-sm-6 col-xs-12">
-          <div class="col-xs-12">
-            <div class="form-group">
-              <label for="fiscal_phone">Teléfonos</label>
-              <p v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.phone_numbers | default('-')}}</p>
-              <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.contact_contact.phone_numbers"/>
-            </div>
-          </div>
-          <div class="col-xs-12">
-            <div class="form-group">
-              <label for="fiscal_phone">Direcciones de correo</label>
-              <p v-if="!editing">{{invoice_ar_contact.invoice_contact.contact_contact.extra_emails | default('-')}}</p>
-              <input id="addr" v-if="editing" class="form-control" type="text" name="address" v-model="invoice_ar_contact.invoice_contact.contact_contact.extra_emails"/>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
-    </form>
   </div>
 </template>
 
