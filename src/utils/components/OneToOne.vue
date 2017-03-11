@@ -1,13 +1,10 @@
 <template>
-<div>
-  <label>
-    {{ name }}
+  <div>
+    <label>{{ name }}</label>
     <select class="form-control" v-model="selected">
       <option v-for="option in options" :value="option">{{ option[display] }}</option>
     </select>
-  </label>
-
-</div>
+  </div>
 </template>
 <script>
 export default {
@@ -24,9 +21,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-label {
-  display: block;
-}
-</style>

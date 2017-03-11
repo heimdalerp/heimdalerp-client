@@ -2,23 +2,25 @@
   <div>
     <button-bar :crumbs="bb_crumbs" :buttons="bb_buttons"></button-bar>
     <div class="jumbotron">
-      <div class="row">
-        <div class="col-xs-12">
-          <h2 v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.name }}</h2>
-          <input
-            type="text"
-            v-if="editing"
-            class="form-control input-lg"
-            v-model="invoice_ar_contact.invoice_contact.contact_contact.name"
-            placeholder="Razón Social"
-            />
+      <div class="form-group">
+        <div class="row">
+          <div class="col-xs-12">
+            <h2 v-if="!editing">{{ invoice_ar_contact.invoice_contact.contact_contact.name }}</h2>
+            <input
+              type="text"
+              v-if="editing"
+              class="form-control input-lg"
+              v-model="invoice_ar_contact.invoice_contact.contact_contact.name"
+              placeholder="Razón Social"
+              />
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-xs-12">
-          <h6 v-if="!editing && type">Es una persona jurídica</h6>
-          <h6 v-if="!editing && !type">Es una persona física</h6>
-          <input v-if="editing" type="checkbox" v-model="type" /><span v-if="editing">Es una persona jurídica</span>
+        <div class="row">
+          <div class="col-xs-12">
+            <h6 v-if="!editing && type">Es una persona jurídica</h6>
+            <h6 v-if="!editing && !type">Es una persona física</h6>
+            <input v-if="editing" type="checkbox" v-model="type" /><span v-if="editing">Es una persona jurídica</span>
+          </div>
         </div>
       </div>
 
@@ -34,9 +36,8 @@
 
             <div class="col-xs-7">
               <div v-if="editing" class="form-group">
-                <label>&nbsp;
-                  <input class="form-control" type="text" name="name" v-model="invoice_ar_contact.id_number"/>
-                </label>
+                <label>&nbsp;</label>
+                <input class="form-control" type="text" name="name" v-model="invoice_ar_contact.id_number"/>
               </div>
               <p v-if="!editing">{{ invoice_ar_contact.id_number }}</p>
             </div>

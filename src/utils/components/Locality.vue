@@ -119,7 +119,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 @media(min-width:768px) {
   .row.no-padding > div {
     padding-left: 0px;

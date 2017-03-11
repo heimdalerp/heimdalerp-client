@@ -12,26 +12,20 @@
           </div>
 
           <div class="modal-body">
-            <form class="form-inline">
-              <div class="form-group">
-                <label>
-                  Nombre:
-                  <input class="form-control" v-model="newLocalityName">
-                </label>
+            <div class="form-group">
+              <label>Nombre:</label>
+              <input class="form-control" v-model="newLocalityName">
+            </div>
+            <div class="form-group">
+              <label>Provincia:</label>
+              <div class="input-group">
+                <select class="form-control" v-model="newLocalityRegion">
+                  <option v-for="region in regions" :value="region.url">
+                    {{ region.default_name }}
+                  </option>
+                </select>
               </div>
-              <div class="form-group">
-                <label>
-                  Provincia:
-                  <div class="input-group">
-                    <select class="form-control" v-model="newLocalityRegion">
-                      <option v-for="region in regions" :value="region.url">
-                        {{ region.default_name }}
-                      </option>
-                    </select>
-                  </div>
-                </label>
-              </div>
-            </form>
+            </div>
           </div>
 
           <div class="modal-footer">
