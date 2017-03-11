@@ -51,6 +51,7 @@
             <label>Fecha</label>
             <p v-if="!editing">{{ invoice.invoice_date }}</p>
             <div v-else class="input-group">
+              {{ invoice.invoice_date }}
               <input type="text" class="calendar form-control" v-model="invoice.invoice_date" :disabled="!editing">
               <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
             </div>
@@ -421,6 +422,8 @@ export default {
   },
 
   mounted () {
+    let vm = this
+
     // Init the calendar
     window.jQuery('.daterangepicker').remove()
     window.jQuery('.calendar').daterangepicker({
@@ -459,6 +462,10 @@ export default {
         ],
         'firstDay': 1
       }
+    })
+
+    window.$('.calendar').on('blur.daterangepicker', function (ev, wat) {
+      vm.invoice.invoice_date = window.$(ev.target).data('daterangepicker').startDate.format('YYYY-MM-DD')
     })
   },
 
