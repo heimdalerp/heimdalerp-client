@@ -32,7 +32,7 @@
           <div class="form-group">
             <label>Contacto</label>
             <p v-if="!editing">{{ invoice.invoicear_contact.invoice_contact.legal_name }}</p>
-            <div class="input-group">
+            <div class="input-group" v-if="editing" >
               <select class="form-control" v-model="invoice.invoicear_contact">
                 <option v-for="contact in contacts" :value="contact">{{ contact.invoice_contact.legal_name }}</option>
               </select>
@@ -51,7 +51,6 @@
             <label>Fecha</label>
             <p v-if="!editing">{{ invoice.invoice_date }}</p>
             <div v-else class="input-group">
-              {{ invoice.invoice_date }}
               <input type="text" class="calendar form-control" v-model="invoice.invoice_date" :disabled="!editing">
               <div class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></div>
             </div>
@@ -131,9 +130,6 @@
                 <select class="form-control" v-model="line.product" @change="updateProduct(line)">
                   <option v-for="product in products" :value="product">{{ product.name }}</option>
                 </select>
-                <div class="input-group-addon">
-                  <span class="glyphicon glyphicon-search"></span>
-                </div>
                 <div class="input-group-addon" @click="openProductViewQuick(line)">
                   <span class="glyphicon glyphicon-plus"></span>
                 </div>
@@ -215,12 +211,14 @@
         </div>
       </div>
 
+      <contact-list-quick ref="contactListQuick" v-model="invoice.invoicear_contact"></contact-list-quick>
       <contact-view-quick ref="contactViewQuick" v-model="contactCreated"></contact-view-quick>
       <product-view-quick ref="productViewQuick" v-model="productCreated"></product-view-quick>
     </div>
   </div>
 </template>
 <script>
+import contactListQuick from '../contacts/listQuick'
 import contactViewQuick from '../contacts/viewQuick'
 import productViewQuick from '../inventory/productViewQuick'
 
@@ -229,6 +227,7 @@ import { addInvoice, getInvoices, getInvoiceTypes, getContacts, getProducts, get
 
 export default {
   components: {
+    contactListQuick,
     contactViewQuick,
     productViewQuick
   },
@@ -373,7 +372,7 @@ export default {
     },
 
     openContactListQuick () {
-      console.log('stub')
+      this.$refs.contactListQuick.open()
     },
 
     openProductViewQuick (lineToPlaceNewProduct) {
